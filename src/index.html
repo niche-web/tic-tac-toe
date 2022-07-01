@@ -16,30 +16,106 @@
   </head>
   <body>
     <!-- New game menu start -->
-
-    Pick player 1's mark Remember: X goes first New Game (vs CPU) New Game (vs
-    player)
-
+    <main id="new-game">
+      <header>
+        <img src="assets/logo.svg" alt="logo" />
+      </header>
+      <section id="player-mark">
+        <p class="intro">Pick player 1's mark</p>
+        <div id="pick-mark-buttons">
+          <button type="button">
+            <svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M15.002 1.147 32 18.145 48.998 1.147a3 3 0 0 1 4.243 0l9.612 9.612a3 3 0 0 1 0 4.243L45.855 32l16.998 16.998a3 3 0 0 1 0 4.243l-9.612 9.612a3 3 0 0 1-4.243 0L32 45.855 15.002 62.853a3 3 0 0 1-4.243 0L1.147 53.24a3 3 0 0 1 0-4.243L18.145 32 1.147 15.002a3 3 0 0 1 0-4.243l9.612-9.612a3 3 0 0 1 4.243 0Z"
+                fill="#31C3BD"
+                fill-rule="evenodd"
+              />
+            </svg>
+          </button>
+          <button type="button">
+            <svg width="64" height="64" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M32 0c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C14.327 64 0 49.673 0 32 0 14.327 14.327 0 32 0Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                fill="#F2B137"
+              />
+            </svg>
+          </button>
+        </div>
+        <p class="foot">Remember: <span>X</span> goes first</p>
+      </section>
+      <footer>
+        <button type="button">New Game (vs CPU)</button>
+        <button type="button">New Game (vs player)</button>
+      </footer>
+    </main>
     <!-- New game menu end -->
 
     <!-- Game board start -->
-
-    <!-- x/o icon -->
-    turn X (You)
-    <!-- Your score -->
-    Ties
-    <!-- Ties score -->
-    X (CPU)
-    <!-- CPU score -->
-
-    Oh no, you lost You won! Player
-    <!-- 1/2 -->
-    wins!
-
-    <!-- x/o icon -->
-    takes the round Round tied Restart game? Quit Next round No, cancel Yes,
-    restart
+    <!-- <template id="start-section"> -->
+    <section id="start">
+      <header>
+        <!-- x/o icon -->
+        <img src="assets/logo.svg" alt="logo" />
+        <div class="turn-wrapp">
+          <p><span class="turn"></span>turn</p>
+        </div>
+        <div class="restart">
+          <img src="assets/icon-restart.svg" alt="" />
+        </div>
+      </header>
+      <section id="slots">
+        <div class="slot-1"></div>
+        <div class="slot-2"></div>
+        <div class="slot-3"></div>
+        <div class="slot-4"></div>
+        <div class="slot-5"></div>
+        <div class="slot-6"></div>
+        <div class="slot-7"></div>
+        <div class="slot-8"></div>
+        <div class="slot-9"></div>
+      </section>
+      <footer>
+        <!-- Your score -->
+        <div class="your-score">
+          <p><span>X</span> (<span>You</span>)</p>
+          <p class="score"></p>
+        </div>
+        <!-- Ties score -->
+        <div class="ties">
+          <p>Ties</p>
+          <p class="score"></p>
+        </div>
+        <!-- CPU score -->
+        <div class="player2-score">
+          <p><span>O</span> (<span class="player">CPU</span>)</p>
+          <p class="score"></p>
+        </div>
+      </footer>
+    </section>
+    <!-- </template> -->
 
     <!-- Game board end -->
+    <!-- <template id="message-section"> -->
+    <section id="message">
+      <header>
+        <p></p>
+      </header>
+      <section id="message-body">
+        <img src="" alt="" />
+        <h2></h2>
+      </section>
+      <footer>
+        <button type="button"></button>
+        <button type="button"></button>
+      </footer>
+    </section>
+    <!-- </template> -->
+    <!-- Oh no, you lost You won! Player -->
+    <!-- 1/2 -->
+    <!-- wins! -->
+
+    <!-- x/o icon -->
+    <!-- takes the round Round tied Restart game? Quit Next round No, cancel Yes, -->
+    <!-- restart -->
   </body>
 </html>
