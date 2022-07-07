@@ -76,9 +76,9 @@
     <div id="start" class="not-show-element">
       <header>
         <!-- x/o icon -->
-        <img src="assets/logo.svg" alt="logo" />
+        <div class="logo-wrapper"><img src="assets/logo.svg" alt="logo" /></div>
         <div
-          class="turn-wrapp m-btn-reset btn-reset bg-semi-dark-navy small-shadow"
+          class="turn-wrap m-btn-reset btn-reset bg-semi-dark-navy small-shadow"
         >
           <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
             <path
@@ -89,10 +89,12 @@
           </svg>
           <p class="cl-silver m-normal h-extrasmall">turn</p>
         </div>
-        <button
-          type="button"
-          class="restart m-btn-reset btn-reset bg-silver small-shadow"
-        ></button>
+        <div class="button-wrapper">
+          <button
+            type="button"
+            class="restart m-btn-reset btn-reset bg-silver small-shadow"
+          ></button>
+        </div>
       </header>
       <div id="slots">
         <div id="1"></div>
