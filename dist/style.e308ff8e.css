@@ -21,10 +21,16 @@
   text-align: center;
   text-transform: uppercase;
 }
-
+html {
+  position: relative;
+}
+body {
+  min-height: 100vh;
+}
 button {
   border: none;
 }
+
 /* :hover */
 @media (hover: hover) {
   .bg-yellow:hover {
@@ -116,9 +122,9 @@ html {
 
 /* |buttons */
 .m-btn-start {
-  width: 327px;
   height: 56px;
   border-radius: 15px;
+  width: 100%;
 }
 .btn-msg {
   height: 52px;
@@ -128,6 +134,12 @@ html {
   height: 40px;
   width: 40px;
   border-radius: 5px;
+}
+.quit-resize {
+  width: 139px;
+}
+.next-round-resize {
+  width: 151px;
 }
 
 /* |shadows */
@@ -143,12 +155,16 @@ html {
 }
 /* ||SITEWIDE */
 body {
-  padding: 0 calc((100% - 327px) / 2) 119px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
-
+#new-game,
+#start {
+  width: 327px;
+}
 /* new game section */
 #new-game header {
-  margin-top: 119px;
   margin-bottom: 32px;
 }
 #player-mark {
@@ -163,13 +179,17 @@ body {
   padding: 9px 8px;
 }
 #pick-mark-buttons button {
-  width: 130px;
+  width: calc((100% - 16px) / 2);
   height: 54px;
   border-radius: 10px;
-  padding-left: 50px;
-  padding-right: 50px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
-
+#pick-mark-buttons button .svg-wrapper {
+  width: 31.74px;
+  height: 31.74px;
+}
 #player-mark p {
   opacity: 0.5;
 }
@@ -179,6 +199,9 @@ body {
 }
 
 /* start section */
+#start {
+  align-self: flex-start;
+}
 #start header {
   margin-top: 24px;
   display: flex;
@@ -191,8 +214,9 @@ body {
   align-items: center;
   padding-left: 15px;
   padding-right: 15px;
-  margin-right: 15px;
+  margin-right: 30px;
 }
+
 #start .turn-wrapp path {
   fill: var(--silver) !important;
 }
@@ -200,6 +224,12 @@ body {
   font-weight: 700;
   line-height: 1.8rem;
   margin-left: 9px;
+}
+#start button {
+  background-image: url('/icon-restart.b9809e31.svg');
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: 38.5%;
 }
 #slots {
   margin-top: 64px;
@@ -242,21 +272,18 @@ body {
   justify-content: center;
 }
 #message {
-  /* position: relative; */
   height: 228px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 }
-#message header {
-  margin-bottom: 16px;
-}
 #message-body {
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--light-yellow);
+  margin-top: 16px;
   margin-bottom: 24px;
 }
 #message-body .icon-container {
@@ -281,11 +308,8 @@ body {
   display: none;
 }
 
-@media (min-width: 400px) {
-  /* || GENERAL STYLE */
-
+@media (min-width: 550px) {
   /* ||TYPOGRAPHY*/
-  /* |larger than 400 */
   .h-large {
     font-size: 4rem;
     letter-spacing: 0.25rem;
@@ -315,7 +339,6 @@ body {
   /* ||UTILITIES*/
   /* |buttons */
   .btn-start {
-    width: 460px;
     height: 67px;
     border-radius: 15px;
   }
@@ -326,6 +349,64 @@ body {
   }
 
   /* ||SITEWIDE */
+  #new-game,
+  #start {
+    width: 460px;
+  }
+  /* new game section */
+  #new-game header {
+    margin-bottom: 40px;
+  }
+  #player-mark {
+    margin-bottom: 40px;
+  }
+  #new-game footer button:last-child {
+    margin-top: 20px;
+  }
+
+  /* start section */
+  #start {
+    align-self: center;
+  }
+  #start .turn-wrapp {
+    width: 140px;
+    padding-left: 30px;
+    padding-right: 30px;
+    margin-right: 15px;
+  }
+  #start .turn-wrapp p {
+    font-weight: 700;
+    line-height: 2.016rem;
+    margin-left: 13px;
+  }
+  /* slots at the start section */
+  #slots {
+    margin-top: 19px;
+    margin-bottom: 20px;
+    grid-template-columns: repeat(3, 140px);
+    grid-template-rows: repeat(3, 140px);
+    grid-gap: 20px;
+  }
+  #start footer {
+    grid-template-columns: repeat(3, 140px);
+    grid-template-rows: 72px;
+  }
+  #start footer h4 {
+    line-height: 30px;
+  }
+
+  /* message section */
+  #message {
+    height: 266px;
+  }
+  #message-body {
+    margin-top: 23px;
+    margin-bottom: 31px;
+  }
+  #message-body .icon-container {
+    width: 64px;
+    margin-right: 24px;
+  }
 }
 
 
