@@ -32,12 +32,16 @@
       <header>
         <img src="assets/logo.svg" alt="logo" />
       </header>
-      <div id="player-mark" class="bg-semi-dark-navy">
+      <div id="player-choice" class="bg-semi-dark-navy">
         <h5 class="m-h-extrasmall cl-silver">Pick player 1's mark</h5>
-        <div id="pick-mark-buttons" class="bg-dark-navy">
-          <button type="button" class="bg-dark-navy cl-silver">
+        <div id="choose-x-o" class="bg-dark-navy">
+          <button id="x-choice-button" type="button" class="active-mark-button">
             <div class="svg-wrapper">
-              <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                class="icon-x"
+                viewBox="0 0 64 64"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
                   d="M15.002 1.147 32 18.145 48.998 1.147a3 3 0 0 1 4.243 0l9.612 9.612a3 3 0 0 1 0 4.243L45.855 32l16.998 16.998a3 3 0 0 1 0 4.243l-9.612 9.612a3 3 0 0 1-4.243 0L32 45.855 15.002 62.853a3 3 0 0 1-4.243 0L1.147 53.24a3 3 0 0 1 0-4.243L18.145 32 1.147 15.002a3 3 0 0 1 0-4.243l9.612-9.612a3 3 0 0 1 4.243 0Z"
                   fill="currentcolor"
@@ -46,9 +50,13 @@
               </svg>
             </div>
           </button>
-          <button type="button" class="bg-silver cl-dark-navy">
+          <button id="o-choice-button" type="button">
             <div class="svg-wrapper">
-              <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                class="icon-o"
+                viewBox="0 0 64 64"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path
                   d="M32 0c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C14.327 64 0 49.673 0 32 0 14.327 14.327 0 32 0Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
                   fill="currentcolor"
@@ -60,10 +68,18 @@
         <p class="m-normal cl-silver">Remember: <span>X</span> goes first</p>
       </div>
       <footer>
-        <button type="button" class="m-btn-start btn-start bg-yellow shadow">
+        <button
+          id="cpu-vs-player-button"
+          type="button"
+          class="m-btn-start btn-start bg-yellow shadow"
+        >
           <h4 class="m-h-extrasmall h-small cl-dark-navy">New Game (vs CPU)</h4>
         </button>
-        <button type="button" class="m-btn-start btn-start bg-blue shadow">
+        <button
+          id="player1-vs-player2-button"
+          type="button"
+          class="m-btn-start btn-start bg-blue shadow"
+        >
           <h4 class="m-h-extrasmall h-small cl-dark-navy">
             New Game (vs player)
           </h4>
@@ -75,76 +91,523 @@
     <!-- Game board start -->
     <div id="start" class="not-show-element">
       <header>
-        <!-- x/o icon -->
         <div class="logo-wrapper"><img src="assets/logo.svg" alt="logo" /></div>
-        <div
-          class="turn-wrap m-btn-reset btn-reset bg-semi-dark-navy small-shadow"
-        >
-          <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <div class="turn m-btn-reset btn-reset bg-semi-dark-navy small-shadow">
+          <svg
+            class="icon-x"
+            turn="x"
+            viewBox="0 0 64 64"
+            xmlns="http://www.w3.org/2000/svg"
+          >
             <path
               d="M15.002 1.147 32 18.145 48.998 1.147a3 3 0 0 1 4.243 0l9.612 9.612a3 3 0 0 1 0 4.243L45.855 32l16.998 16.998a3 3 0 0 1 0 4.243l-9.612 9.612a3 3 0 0 1-4.243 0L32 45.855 15.002 62.853a3 3 0 0 1-4.243 0L1.147 53.24a3 3 0 0 1 0-4.243L18.145 32 1.147 15.002a3 3 0 0 1 0-4.243l9.612-9.612a3 3 0 0 1 4.243 0Z"
               fill="#31C3BD"
               fill-rule="evenodd"
             />
           </svg>
+          <svg
+            class="icon-o not-show-element"
+            turn="o"
+            viewBox="0 0 64 64"
+            xmlns="http://www.w3.org/2000/svg "
+            class="not-show-element"
+          >
+            <path
+              d="M32 0c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C14.327 64 0 49.673 0 32 0 14.327 14.327 0 32 0Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+              fill="#F2B137"
+            />
+          </svg>
           <p class="cl-silver m-normal h-extrasmall">turn</p>
         </div>
         <div class="button-wrapper">
           <button
+            id="restart-button"
             type="button"
             class="restart m-btn-reset btn-reset bg-silver small-shadow"
+            disabled
           ></button>
         </div>
       </header>
-      <div id="slots">
-        <div id="1"></div>
-        <div id="2"></div>
-        <div id="3"></div>
-        <div id="4"></div>
-        <div id="5"></div>
-        <div id="6"></div>
-        <div id="7"></div>
-        <div id="8"></div>
-        <div id="9"></div>
+      <div id="cells">
+        <div id="2" idle>
+          <div>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-x not-show-element"
+            >
+              <path
+                d="M15.002 1.147 32 18.145 48.998 1.147a3 3 0 0 1 4.243 0l9.612 9.612a3 3 0 0 1 0 4.243L45.855 32l16.998 16.998a3 3 0 0 1 0 4.243l-9.612 9.612a3 3 0 0 1-4.243 0L32 45.855 15.002 62.853a3 3 0 0 1-4.243 0L1.147 53.24a3 3 0 0 1 0-4.243L18.145 32 1.147 15.002a3 3 0 0 1 0-4.243l9.612-9.612a3 3 0 0 1 4.243 0Z"
+                fill="#31C3BD"
+                fill-rule="evenodd"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-o not-show-element"
+            >
+              <path
+                d="M32 0c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C14.327 64 0 49.673 0 32 0 14.327 14.327 0 32 0Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                fill="#F2B137"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-x not-show-element"
+            >
+              <path
+                d="M51.12 1.269c.511 0 1.023.195 1.414.586l9.611 9.611c.391.391.586.903.586 1.415s-.195 1.023-.586 1.414L44.441 32l17.704 17.705c.391.39.586.902.586 1.414 0 .512-.195 1.024-.586 1.415l-9.611 9.611c-.391.391-.903.586-1.415.586a1.994 1.994 0 0 1-1.414-.586L32 44.441 14.295 62.145c-.39.391-.902.586-1.414.586a1.994 1.994 0 0 1-1.415-.586l-9.611-9.611a1.994 1.994 0 0 1-.586-1.415c0-.512.195-1.023.586-1.414L19.559 32 1.855 14.295a1.994 1.994 0 0 1-.586-1.414c0-.512.195-1.024.586-1.415l9.611-9.611c.391-.391.903-.586 1.415-.586s1.023.195 1.414.586L32 19.559 49.705 1.855c.39-.391.902-.586 1.414-.586Z"
+                stroke="#31C3BD"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 66 66 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-o not-show-element"
+            >
+              <path
+                d="M33 1c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C15.327 65 1 50.673 1 33 1 15.327 15.327 1 33 1Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                stroke="#F2B137"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+          </div>
+        </div>
+        <div id="7" idle>
+          <div>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-x not-show-element"
+            >
+              <path
+                d="M15.002 1.147 32 18.145 48.998 1.147a3 3 0 0 1 4.243 0l9.612 9.612a3 3 0 0 1 0 4.243L45.855 32l16.998 16.998a3 3 0 0 1 0 4.243l-9.612 9.612a3 3 0 0 1-4.243 0L32 45.855 15.002 62.853a3 3 0 0 1-4.243 0L1.147 53.24a3 3 0 0 1 0-4.243L18.145 32 1.147 15.002a3 3 0 0 1 0-4.243l9.612-9.612a3 3 0 0 1 4.243 0Z"
+                fill="#31C3BD"
+                fill-rule="evenodd"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-o not-show-element"
+            >
+              <path
+                d="M32 0c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C14.327 64 0 49.673 0 32 0 14.327 14.327 0 32 0Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                fill="#F2B137"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-x not-show-element"
+            >
+              <path
+                d="M51.12 1.269c.511 0 1.023.195 1.414.586l9.611 9.611c.391.391.586.903.586 1.415s-.195 1.023-.586 1.414L44.441 32l17.704 17.705c.391.39.586.902.586 1.414 0 .512-.195 1.024-.586 1.415l-9.611 9.611c-.391.391-.903.586-1.415.586a1.994 1.994 0 0 1-1.414-.586L32 44.441 14.295 62.145c-.39.391-.902.586-1.414.586a1.994 1.994 0 0 1-1.415-.586l-9.611-9.611a1.994 1.994 0 0 1-.586-1.415c0-.512.195-1.023.586-1.414L19.559 32 1.855 14.295a1.994 1.994 0 0 1-.586-1.414c0-.512.195-1.024.586-1.415l9.611-9.611c.391-.391.903-.586 1.415-.586s1.023.195 1.414.586L32 19.559 49.705 1.855c.39-.391.902-.586 1.414-.586Z"
+                stroke="#31C3BD"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 66 66 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-o not-show-element"
+            >
+              <path
+                d="M33 1c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C15.327 65 1 50.673 1 33 1 15.327 15.327 1 33 1Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                stroke="#F2B137"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+          </div>
+        </div>
+        <div id="6" idle>
+          <div>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-x not-show-element"
+            >
+              <path
+                d="M15.002 1.147 32 18.145 48.998 1.147a3 3 0 0 1 4.243 0l9.612 9.612a3 3 0 0 1 0 4.243L45.855 32l16.998 16.998a3 3 0 0 1 0 4.243l-9.612 9.612a3 3 0 0 1-4.243 0L32 45.855 15.002 62.853a3 3 0 0 1-4.243 0L1.147 53.24a3 3 0 0 1 0-4.243L18.145 32 1.147 15.002a3 3 0 0 1 0-4.243l9.612-9.612a3 3 0 0 1 4.243 0Z"
+                fill="#31C3BD"
+                fill-rule="evenodd"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-o not-show-element"
+            >
+              <path
+                d="M32 0c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C14.327 64 0 49.673 0 32 0 14.327 14.327 0 32 0Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                fill="#F2B137"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-x not-show-element"
+            >
+              <path
+                d="M51.12 1.269c.511 0 1.023.195 1.414.586l9.611 9.611c.391.391.586.903.586 1.415s-.195 1.023-.586 1.414L44.441 32l17.704 17.705c.391.39.586.902.586 1.414 0 .512-.195 1.024-.586 1.415l-9.611 9.611c-.391.391-.903.586-1.415.586a1.994 1.994 0 0 1-1.414-.586L32 44.441 14.295 62.145c-.39.391-.902.586-1.414.586a1.994 1.994 0 0 1-1.415-.586l-9.611-9.611a1.994 1.994 0 0 1-.586-1.415c0-.512.195-1.023.586-1.414L19.559 32 1.855 14.295a1.994 1.994 0 0 1-.586-1.414c0-.512.195-1.024.586-1.415l9.611-9.611c.391-.391.903-.586 1.415-.586s1.023.195 1.414.586L32 19.559 49.705 1.855c.39-.391.902-.586 1.414-.586Z"
+                stroke="#31C3BD"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 66 66 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-o not-show-element"
+            >
+              <path
+                d="M33 1c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C15.327 65 1 50.673 1 33 1 15.327 15.327 1 33 1Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                stroke="#F2B137"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+          </div>
+        </div>
+        <div id="9" idle>
+          <div>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-x not-show-element"
+            >
+              <path
+                d="M15.002 1.147 32 18.145 48.998 1.147a3 3 0 0 1 4.243 0l9.612 9.612a3 3 0 0 1 0 4.243L45.855 32l16.998 16.998a3 3 0 0 1 0 4.243l-9.612 9.612a3 3 0 0 1-4.243 0L32 45.855 15.002 62.853a3 3 0 0 1-4.243 0L1.147 53.24a3 3 0 0 1 0-4.243L18.145 32 1.147 15.002a3 3 0 0 1 0-4.243l9.612-9.612a3 3 0 0 1 4.243 0Z"
+                fill="#31C3BD"
+                fill-rule="evenodd"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-o not-show-element"
+            >
+              <path
+                d="M32 0c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C14.327 64 0 49.673 0 32 0 14.327 14.327 0 32 0Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                fill="#F2B137"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-x not-show-element"
+            >
+              <path
+                d="M51.12 1.269c.511 0 1.023.195 1.414.586l9.611 9.611c.391.391.586.903.586 1.415s-.195 1.023-.586 1.414L44.441 32l17.704 17.705c.391.39.586.902.586 1.414 0 .512-.195 1.024-.586 1.415l-9.611 9.611c-.391.391-.903.586-1.415.586a1.994 1.994 0 0 1-1.414-.586L32 44.441 14.295 62.145c-.39.391-.902.586-1.414.586a1.994 1.994 0 0 1-1.415-.586l-9.611-9.611a1.994 1.994 0 0 1-.586-1.415c0-.512.195-1.023.586-1.414L19.559 32 1.855 14.295a1.994 1.994 0 0 1-.586-1.414c0-.512.195-1.024.586-1.415l9.611-9.611c.391-.391.903-.586 1.415-.586s1.023.195 1.414.586L32 19.559 49.705 1.855c.39-.391.902-.586 1.414-.586Z"
+                stroke="#31C3BD"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 66 66 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-o not-show-element"
+            >
+              <path
+                d="M33 1c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C15.327 65 1 50.673 1 33 1 15.327 15.327 1 33 1Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                stroke="#F2B137"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+          </div>
+        </div>
+        <div id="5" idle>
+          <div>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-x not-show-element"
+            >
+              <path
+                d="M15.002 1.147 32 18.145 48.998 1.147a3 3 0 0 1 4.243 0l9.612 9.612a3 3 0 0 1 0 4.243L45.855 32l16.998 16.998a3 3 0 0 1 0 4.243l-9.612 9.612a3 3 0 0 1-4.243 0L32 45.855 15.002 62.853a3 3 0 0 1-4.243 0L1.147 53.24a3 3 0 0 1 0-4.243L18.145 32 1.147 15.002a3 3 0 0 1 0-4.243l9.612-9.612a3 3 0 0 1 4.243 0Z"
+                fill="#31C3BD"
+                fill-rule="evenodd"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-o not-show-element"
+            >
+              <path
+                d="M32 0c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C14.327 64 0 49.673 0 32 0 14.327 14.327 0 32 0Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                fill="#F2B137"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-x not-show-element"
+            >
+              <path
+                d="M51.12 1.269c.511 0 1.023.195 1.414.586l9.611 9.611c.391.391.586.903.586 1.415s-.195 1.023-.586 1.414L44.441 32l17.704 17.705c.391.39.586.902.586 1.414 0 .512-.195 1.024-.586 1.415l-9.611 9.611c-.391.391-.903.586-1.415.586a1.994 1.994 0 0 1-1.414-.586L32 44.441 14.295 62.145c-.39.391-.902.586-1.414.586a1.994 1.994 0 0 1-1.415-.586l-9.611-9.611a1.994 1.994 0 0 1-.586-1.415c0-.512.195-1.023.586-1.414L19.559 32 1.855 14.295a1.994 1.994 0 0 1-.586-1.414c0-.512.195-1.024.586-1.415l9.611-9.611c.391-.391.903-.586 1.415-.586s1.023.195 1.414.586L32 19.559 49.705 1.855c.39-.391.902-.586 1.414-.586Z"
+                stroke="#31C3BD"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 66 66 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-o not-show-element"
+            >
+              <path
+                d="M33 1c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C15.327 65 1 50.673 1 33 1 15.327 15.327 1 33 1Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                stroke="#F2B137"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+          </div>
+        </div>
+        <div id="1" idle>
+          <div>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-x not-show-element"
+            >
+              <path
+                d="M15.002 1.147 32 18.145 48.998 1.147a3 3 0 0 1 4.243 0l9.612 9.612a3 3 0 0 1 0 4.243L45.855 32l16.998 16.998a3 3 0 0 1 0 4.243l-9.612 9.612a3 3 0 0 1-4.243 0L32 45.855 15.002 62.853a3 3 0 0 1-4.243 0L1.147 53.24a3 3 0 0 1 0-4.243L18.145 32 1.147 15.002a3 3 0 0 1 0-4.243l9.612-9.612a3 3 0 0 1 4.243 0Z"
+                fill="#31C3BD"
+                fill-rule="evenodd"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-o not-show-element"
+            >
+              <path
+                d="M32 0c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C14.327 64 0 49.673 0 32 0 14.327 14.327 0 32 0Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                fill="#F2B137"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-x not-show-element"
+            >
+              <path
+                d="M51.12 1.269c.511 0 1.023.195 1.414.586l9.611 9.611c.391.391.586.903.586 1.415s-.195 1.023-.586 1.414L44.441 32l17.704 17.705c.391.39.586.902.586 1.414 0 .512-.195 1.024-.586 1.415l-9.611 9.611c-.391.391-.903.586-1.415.586a1.994 1.994 0 0 1-1.414-.586L32 44.441 14.295 62.145c-.39.391-.902.586-1.414.586a1.994 1.994 0 0 1-1.415-.586l-9.611-9.611a1.994 1.994 0 0 1-.586-1.415c0-.512.195-1.023.586-1.414L19.559 32 1.855 14.295a1.994 1.994 0 0 1-.586-1.414c0-.512.195-1.024.586-1.415l9.611-9.611c.391-.391.903-.586 1.415-.586s1.023.195 1.414.586L32 19.559 49.705 1.855c.39-.391.902-.586 1.414-.586Z"
+                stroke="#31C3BD"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 66 66 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-o not-show-element"
+            >
+              <path
+                d="M33 1c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C15.327 65 1 50.673 1 33 1 15.327 15.327 1 33 1Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                stroke="#F2B137"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+          </div>
+        </div>
+        <div id="4" idle>
+          <div>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-x not-show-element"
+            >
+              <path
+                d="M15.002 1.147 32 18.145 48.998 1.147a3 3 0 0 1 4.243 0l9.612 9.612a3 3 0 0 1 0 4.243L45.855 32l16.998 16.998a3 3 0 0 1 0 4.243l-9.612 9.612a3 3 0 0 1-4.243 0L32 45.855 15.002 62.853a3 3 0 0 1-4.243 0L1.147 53.24a3 3 0 0 1 0-4.243L18.145 32 1.147 15.002a3 3 0 0 1 0-4.243l9.612-9.612a3 3 0 0 1 4.243 0Z"
+                fill="#31C3BD"
+                fill-rule="evenodd"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-o not-show-element"
+            >
+              <path
+                d="M32 0c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C14.327 64 0 49.673 0 32 0 14.327 14.327 0 32 0Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                fill="#F2B137"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-x not-show-element"
+            >
+              <path
+                d="M51.12 1.269c.511 0 1.023.195 1.414.586l9.611 9.611c.391.391.586.903.586 1.415s-.195 1.023-.586 1.414L44.441 32l17.704 17.705c.391.39.586.902.586 1.414 0 .512-.195 1.024-.586 1.415l-9.611 9.611c-.391.391-.903.586-1.415.586a1.994 1.994 0 0 1-1.414-.586L32 44.441 14.295 62.145c-.39.391-.902.586-1.414.586a1.994 1.994 0 0 1-1.415-.586l-9.611-9.611a1.994 1.994 0 0 1-.586-1.415c0-.512.195-1.023.586-1.414L19.559 32 1.855 14.295a1.994 1.994 0 0 1-.586-1.414c0-.512.195-1.024.586-1.415l9.611-9.611c.391-.391.903-.586 1.415-.586s1.023.195 1.414.586L32 19.559 49.705 1.855c.39-.391.902-.586 1.414-.586Z"
+                stroke="#31C3BD"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 66 66 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-o not-show-element"
+            >
+              <path
+                d="M33 1c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C15.327 65 1 50.673 1 33 1 15.327 15.327 1 33 1Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                stroke="#F2B137"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+          </div>
+        </div>
+        <div id="3" idle>
+          <div>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-x not-show-element"
+            >
+              <path
+                d="M15.002 1.147 32 18.145 48.998 1.147a3 3 0 0 1 4.243 0l9.612 9.612a3 3 0 0 1 0 4.243L45.855 32l16.998 16.998a3 3 0 0 1 0 4.243l-9.612 9.612a3 3 0 0 1-4.243 0L32 45.855 15.002 62.853a3 3 0 0 1-4.243 0L1.147 53.24a3 3 0 0 1 0-4.243L18.145 32 1.147 15.002a3 3 0 0 1 0-4.243l9.612-9.612a3 3 0 0 1 4.243 0Z"
+                fill="#31C3BD"
+                fill-rule="evenodd"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-o not-show-element"
+            >
+              <path
+                d="M32 0c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C14.327 64 0 49.673 0 32 0 14.327 14.327 0 32 0Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                fill="#F2B137"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-x not-show-element"
+            >
+              <path
+                d="M51.12 1.269c.511 0 1.023.195 1.414.586l9.611 9.611c.391.391.586.903.586 1.415s-.195 1.023-.586 1.414L44.441 32l17.704 17.705c.391.39.586.902.586 1.414 0 .512-.195 1.024-.586 1.415l-9.611 9.611c-.391.391-.903.586-1.415.586a1.994 1.994 0 0 1-1.414-.586L32 44.441 14.295 62.145c-.39.391-.902.586-1.414.586a1.994 1.994 0 0 1-1.415-.586l-9.611-9.611a1.994 1.994 0 0 1-.586-1.415c0-.512.195-1.023.586-1.414L19.559 32 1.855 14.295a1.994 1.994 0 0 1-.586-1.414c0-.512.195-1.024.586-1.415l9.611-9.611c.391-.391.903-.586 1.415-.586s1.023.195 1.414.586L32 19.559 49.705 1.855c.39-.391.902-.586 1.414-.586Z"
+                stroke="#31C3BD"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 66 66 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-o not-show-element"
+            >
+              <path
+                d="M33 1c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C15.327 65 1 50.673 1 33 1 15.327 15.327 1 33 1Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                stroke="#F2B137"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+          </div>
+        </div>
+        <div id="8" idle>
+          <div>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-x not-show-element"
+            >
+              <path
+                d="M15.002 1.147 32 18.145 48.998 1.147a3 3 0 0 1 4.243 0l9.612 9.612a3 3 0 0 1 0 4.243L45.855 32l16.998 16.998a3 3 0 0 1 0 4.243l-9.612 9.612a3 3 0 0 1-4.243 0L32 45.855 15.002 62.853a3 3 0 0 1-4.243 0L1.147 53.24a3 3 0 0 1 0-4.243L18.145 32 1.147 15.002a3 3 0 0 1 0-4.243l9.612-9.612a3 3 0 0 1 4.243 0Z"
+                fill="#31C3BD"
+                fill-rule="evenodd"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-o not-show-element"
+            >
+              <path
+                d="M32 0c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C14.327 64 0 49.673 0 32 0 14.327 14.327 0 32 0Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                fill="#F2B137"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 64 64 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-x not-show-element"
+            >
+              <path
+                d="M51.12 1.269c.511 0 1.023.195 1.414.586l9.611 9.611c.391.391.586.903.586 1.415s-.195 1.023-.586 1.414L44.441 32l17.704 17.705c.391.39.586.902.586 1.414 0 .512-.195 1.024-.586 1.415l-9.611 9.611c-.391.391-.903.586-1.415.586a1.994 1.994 0 0 1-1.414-.586L32 44.441 14.295 62.145c-.39.391-.902.586-1.414.586a1.994 1.994 0 0 1-1.415-.586l-9.611-9.611a1.994 1.994 0 0 1-.586-1.415c0-.512.195-1.023.586-1.414L19.559 32 1.855 14.295a1.994 1.994 0 0 1-.586-1.414c0-.512.195-1.024.586-1.415l9.611-9.611c.391-.391.903-.586 1.415-.586s1.023.195 1.414.586L32 19.559 49.705 1.855c.39-.391.902-.586 1.414-.586Z"
+                stroke="#31C3BD"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+            <svg
+              viewBox="0 0 66 66 "
+              xmlns="http://www.w3.org/2000/svg"
+              class="icon-outline-o not-show-element"
+            >
+              <path
+                d="M33 1c17.673 0 32 14.327 32 32 0 17.673-14.327 32-32 32C15.327 65 1 50.673 1 33 1 15.327 15.327 1 33 1Zm0 18.963c-7.2 0-13.037 5.837-13.037 13.037 0 7.2 5.837 13.037 13.037 13.037 7.2 0 13.037-5.837 13.037-13.037 0-7.2-5.837-13.037-13.037-13.037Z"
+                stroke="#F2B137"
+                stroke-width="2"
+                fill="none"
+              />
+            </svg>
+          </div>
+        </div>
       </div>
       <footer>
         <!-- Your score -->
-        <div class="your-score bg-blue">
-          <p class="m-small-normal normal"><span>X</span> (<span>You</span>)</p>
+        <div id="x-score" class="bg-blue">
+          <p class="m-small-normal normal">X (<span>You</span>)</p>
           <h4 class="score m-h-small h-medium">00</h4>
         </div>
         <!-- Ties score -->
-        <div class="ties bg-silver">
+        <div id="ties" class="bg-silver">
           <p class="m-small-normal normal">Ties</p>
           <h4 class="score m-h-small h-medium">00</h4>
         </div>
         <!-- CPU score -->
-        <div class="player2-score bg-yellow">
-          <p class="m-small-normal normal">
-            <span>O</span> (<span class="player">CPU</span>)
-          </p>
+        <div id="o-score" class="bg-yellow">
+          <p class="m-small-normal normal">O (<span>CPU</span>)</p>
           <h4 class="score m-h-small h-medium">00</h4>
         </div>
       </footer>
     </div>
 
     <!-- Game board end -->
-    <div id="msg-layer" class="not-show-element">
-      <div id="message" class="bg-semi-dark-navy">
+    <dialog id="dialog-box">
+      <form class="bg-semi-dark-navy" id="msg" method="dialog">
         <header>
-          <p id="lost-header" class="m-normal h-extrasmall cl-silver">
+          <p id="lost" class="m-normal h-extrasmall cl-silver not-show-element">
             Oh no, you lost
           </p>
-          <p id="won-header" class="m-normal h-extrasmall cl-silver">
+          <p id="won" class="m-normal h-extrasmall cl-silver not-show-element">
             You won!
           </p>
-          <p id="player-header" class="m-normal h-extrasmall cl-silver">
+          <p id="player-won-lost" class="m-normal h-extrasmall cl-silver not-show-element">
             Player <span class="player-number">1</span> wins!
           </p>
         </header>
-        <div id="message-body">
+        <div id="msg-body">
           <div class="icon-container">
             <svg
+              class="not-show-element"
               id="icon-o"
               viewBox="0 0 64 64"
               xmlns="http://www.w3.org/2000/svg"
@@ -155,6 +618,7 @@
               />
             </svg>
             <svg
+              class="not-show-element"
               id="icon-x"
               viewBox="0 0 64 64"
               xmlns="http://www.w3.org/2000/svg"
@@ -166,21 +630,33 @@
               />
             </svg>
           </div>
-          <h3 id="take-round" class="m-h-medium h-large">takes the round</h3>
-          <h3 id="restart" class="m-h-medium h-large">Restart game?</h3>
-          <h3 id="tied" class="m-h-medium h-large">Round tied</h3>
+          <h3 id="takes-round" class="m-h-medium h-large not-show-element">takes the round</h3>
+          <h3 id="restart" class="m-h-medium h-large cl-silver not-show-element">
+            Restart game?
+          </h3>
+          <h3 id="tied" class="m-h-medium h-large cl-silver not-show-element">
+            Round tied
+          </h3>
         </div>
         <footer>
-          <button type="button" class="m-btn-start bg-silver small-shadow">
+          <button
+            id="quit-cancel"
+            value="default"
+            type="button"
+            class="quit-btn btn-msg bg-silver small-shadow"
+          >
             <h5 class="m-h-extrasmall cl-dark-navy">Quit</h5>
           </button>
-          <button type="button" class="m-btn-start bg-yellow small-shadow">
+          <button
+            id="round-restart"
+            value="default"
+            type="button"
+            class="nextround-restart-btn btn-msg bg-yellow small-shadow"
+          >
             <h5 class="m-h-extrasmall cl-dark-navy">Next round</h5>
           </button>
         </footer>
-      </div>
-    </div>
-
-    <!--   No, cancel Yes, restart -->
+      </form>
+    </dialog>
   </body>
 </html>

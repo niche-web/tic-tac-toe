@@ -21,6 +21,9 @@
   text-align: center;
   text-transform: uppercase;
 }
+button:disabled {
+  opacity: 0.3;
+}
 html {
   position: relative;
 }
@@ -29,6 +32,9 @@ body {
 }
 button {
   border: none;
+}
+button:disabled {
+  opacity: 0.3;
 }
 
 /* :hover */
@@ -41,6 +47,12 @@ button {
   }
   .bg-blue:hover {
     background: var(--light-blue-hover);
+  }
+  .x-hover {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background-color: var(--dark-orange);
   }
 }
 
@@ -121,6 +133,10 @@ html {
 }
 
 /* |buttons */
+.active-mark-button {
+  background: none !important;
+  color: var(--silver) !important;
+}
 .m-btn-start {
   height: 56px;
   border-radius: 15px;
@@ -135,11 +151,20 @@ html {
   width: 40px;
   border-radius: 5px;
 }
+.quit-btn {
+  width: 76px;
+  margin-right: 16px;
+}
+.nextround-restart-btn {
+  width: 146px;
+}
+
 .quit-resize {
-  width: 139px;
+  width: 139px !important;
+  margin-right: 16px;
 }
 .next-round-resize {
-  width: 151px;
+  width: 151px !important;
 }
 
 /* |shadows */
@@ -149,9 +174,12 @@ html {
 .small-shadow {
   box-shadow: 0 4px;
 }
-
+/* others */
 .not-show-element {
   display: none !important;
+}
+.disabled {
+  opacity: 0.3;
 }
 /* ||SITEWIDE */
 body {
@@ -167,30 +195,32 @@ body {
 #new-game header {
   margin-bottom: 32px;
 }
-#player-mark {
+#player-choice {
   padding: 24px 24px 30px;
   margin-bottom: 32px;
   border-radius: 15px;
 }
-#pick-mark-buttons {
+#choose-x-o {
   border-radius: 10px;
   margin-top: 24px;
   margin-bottom: 17px;
   padding: 9px 8px;
 }
-#pick-mark-buttons button {
+#choose-x-o button {
   width: calc((100% - 16px) / 2);
   height: 54px;
   border-radius: 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  background: var(--silver);
+  color: inherit;
 }
-#pick-mark-buttons button .svg-wrapper {
+#choose-x-o button .svg-wrapper {
   width: 31.74px;
   height: 31.74px;
 }
-#player-mark p {
+#player-choice p {
   opacity: 0.5;
 }
 
@@ -213,19 +243,19 @@ body {
   align-items: center;
   justify-content: flex-start;
 }
-#start header .turn-wrap {
+#start header .turn {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-#start header .turn-wrap svg {
+#start header .turn svg {
   flex-basis: 16px;
 }
-#start header .turn-wrap path {
+#start header .turn path {
   fill: var(--silver) !important;
 }
-#start .turn-wrap p {
+#start .turn p {
   font-weight: 700;
   line-height: 1.8rem;
   margin-left: 9px;
@@ -239,7 +269,7 @@ body {
   background-repeat: no-repeat;
   background-size: 38.5%;
 }
-#slots {
+#cells {
   height: 327px;
   margin-top: 64px;
   margin-bottom: 20px;
@@ -248,10 +278,17 @@ body {
   grid-template-rows: repeat(3, 1fr);
   grid-gap: 20px;
 }
-#slots div {
+#cells > div {
   border-radius: 10px;
   box-shadow: inset 0px -8px 0px var(--dark-shadow);
   background: var(--semi-dark-navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#cells div > div {
+  position: relative;
+  width: 40px;
 }
 #start footer {
   display: grid;
@@ -268,26 +305,28 @@ body {
   justify-content: center;
 }
 
-/* message section */
-#msg-layer {
-  width: 100%;
-  height: 100%;
+/* msg section */
+#dialog-box {
   background: rgba(0, 0, 0, 0.5);
-  position: absolute;
-  left: 0;
-  top: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  position: absolute;
+  width: 100vw;
+  height: 100vh;
+  border: none;
 }
-#message {
+#dialog-box:not([open]) {
+  display: none;
+}
+#msg {
   height: 228px;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
 }
-#message-body {
+#msg-body {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -295,26 +334,13 @@ body {
   margin-top: 16px;
   margin-bottom: 24px;
 }
-#message-body .icon-container {
+#msg-body .icon-container {
   width: 30px;
   margin-right: 8px;
 }
-#message footer button {
-  height: 52px;
-}
-#message footer button:first-child {
-  width: 76px;
-  margin-right: 16px;
-}
-#message footer button:last-child {
-  width: 146px;
-}
-#icon-x,
-#restart,
-#tied,
-#won-header,
-#player-header {
-  display: none;
+
+#msg-body #restart, #msg-body #tied{
+  margin-top: -16px;
 }
 
 @media (min-width: 550px) {
@@ -366,7 +392,7 @@ body {
   #new-game header {
     margin-bottom: 40px;
   }
-  #player-mark {
+  #player-choice {
     margin-bottom: 40px;
   }
   #new-game footer button:last-child {
@@ -377,20 +403,22 @@ body {
   #start {
     align-self: center;
   }
-  #start header .turn-wrap svg {
+  #start header .turn svg {
     flex-basis: 20px;
   }
-  #start .turn-wrapp p {
+  #start .turnp p {
     font-weight: 700;
     margin-left: 13px;
   }
-  /* slots at the start section */
-  #slots {
+  /* cells at the start section */
+  #cells {
     margin-top: 19px;
     margin-bottom: 20px;
     height: 460px;
   }
-
+  #cells div div {
+    width: 64px;
+  }
   #start footer {
     grid-template-rows: 72px;
   }
@@ -398,17 +426,20 @@ body {
     line-height: 30px;
   }
 
-  /* message section */
-  #message {
+  /* msg section */
+  #msg {
     height: 266px;
   }
-  #message-body {
+  #msg-body {
     margin-top: 23px;
     margin-bottom: 31px;
   }
-  #message-body .icon-container {
+  #msg-body .icon-container {
     width: 64px;
     margin-right: 24px;
+  }
+  #msg-body #restart, #msg-body #tied{
+    margin-top: -23px;
   }
 }
 

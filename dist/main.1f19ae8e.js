@@ -118,29 +118,294 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 
   return newRequire;
 })({"main.js":[function(require,module,exports) {
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _iterableToArrayLimit(arr, i) { var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"]; if (_i == null) return; var _arr = []; var _n = true; var _d = false; var _s, _e; try { for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e2) { throw _e2; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e3) { didErr = true; err = _e3; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
+
+// import {Mark, Player, Turn} from './modules/objects.js';
+// mark OBJECT
+var markPrototype = {
+  updateMark: function updateMark() {
+    if (this.btnX.classList.contains('active-mark-button')) {
+      this.p1Mark = 'x';
+      this.p2Mark = 'o';
+    } else {
+      this.p2Mark = 'x';
+      this.p1Mark = 'o';
+    }
+  },
+  switch: function _switch() {
+    this.btnX.classList.toggle('active-mark-button');
+    this.btnO.classList.toggle('active-mark-button');
+    this.updateMark();
+  }
+};
+
+function Mark() {
+  this.p1Mark = 'x';
+  this.p2Mark = 'o';
+  this.btnX = document.querySelector('#x-choice-button');
+  this.btnO = document.querySelector('#o-choice-button');
+}
+
+Mark.prototype = markPrototype;
+Mark.prototype.constructor = Mark; // Player OBJECT
+
+var playerPrototype = {
+  updateScore: function updateScore() {
+    var scoreString = this.score.toString();
+
+    if (this.score < 10) {
+      scoreString = '0' + scoreString;
+    }
+
+    this.scoreCell.querySelector('.score').textContent = scoreString;
+  },
+  initializeScore: function initializeScore() {
+    if (this.mark === 'x') {
+      this.scoreCell = document.querySelector('#x-score');
+    } else {
+      this.scoreCell = document.querySelector('#o-score');
+    }
+
+    this.scoreCell.querySelector('p span').textContent = this.name;
+  },
+  generateClick: function generateClick() {} //For CPU user
+
+};
+
+function Player() {
+  this.mark = '';
+  this.name = '';
+  this.score = 0;
+  this.scoreCell = {};
+}
+
+Player.prototype = playerPrototype;
+Player.prototype.constructor = Player; // Turn OBJECT
+
+var turnPrototype = {
+  switch: function _switch() {
+    var thirdRecipe;
+    thirdRecipe = this.currentTurn;
+    this.currentTurn = this.previousTurn;
+    this.previousTurn = thirdRecipe;
+    this.show();
+  },
+  show: function show() {
+    var markPrevious = this.previousTurn.toUpperCase();
+    var markCurrent = this.currentTurn.toUpperCase();
+    this['icon' + markCurrent].classList.remove('not-show-element');
+    this['icon' + markPrevious].classList.add('not-show-element');
+  },
+  reset: function reset() {
+    this.currentTurn = 'x';
+    this.previousTurn = '0';
+    this.show();
+  }
+};
+
+function Turn() {
+  this.currentTurn = 'x';
+  this.previousTurn = 'o';
+  this.iconX = document.querySelector('.turn .icon-x');
+  this.iconO = document.querySelector('.turn .icon-o');
+}
+
+Turn.prototype = turnPrototype;
+Turn.prototype.constructor = Turn; // dialog OBJECT
+
+function configure(kind) {
+  switch (kind) {
+    case type.first:
+      playerWonLost.classList.remove('not-show-element');
+      playerWonLost.querySelector('.player-number').textContent = "1";
+      iconX.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color = iconX.querySelector('path').getAttribute("fill");
+      break;
+
+    case type.second:
+      playerWonLost.classList.remove('not-show-element');
+      playerWonLost.querySelector('.player-number').textContent = "1";
+      iconO.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color = iconO.querySelector('path').getAttribute("fill");
+      break;
+
+    case type.third:
+      playerWonLost.classList.remove('not-show-element');
+      playerWonLost.querySelector('.player-number').textContent = "2";
+      iconX.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color = iconX.querySelector('path').getAttribute("fill");
+      break;
+
+    case type.fourth:
+      playerWonLost.classList.remove('not-show-element');
+      playerWonLost.querySelector('.player-number').textContent = "2";
+      iconO.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color = iconO.querySelector('path').getAttribute("fill");
+      break;
+
+    case type.fifth:
+      won.classList.remove('not-show-element');
+      iconX.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color = iconX.querySelector('path').getAttribute("fill");
+      break;
+
+    case type.sixth:
+      console.log(won);
+      won.classList.remove('not-show-element');
+      console.log(won);
+      iconO.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color = iconO.querySelector('path').getAttribute("fill");
+      break;
+
+    case type.seventh:
+      lost.classList.remove('not-show-element');
+      iconX.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color = iconX.querySelector('path').getAttribute("fill");
+      break;
+
+    case type.eighth:
+      lost.classList.remove('not-show-element');
+      iconO.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color = iconO.querySelector('path').getAttribute("fill");
+      break;
+
+    case type.nineth:
+      iconContainer.classList.add('not-show-element');
+      restart.classList.remove('not-show-element');
+      break;
+
+    case type.tenth:
+      iconContainer.classList.add('not-show-element');
+      tied.classList.remove('not-show-element');
+      break;
+  }
+
+  if (kind === type.nineth) {
+    quitCancelBtn.classList.replace('quit-btn', 'quit-resize');
+    roundRestartBtn.classList.replace('nextround-restart-btn', 'next-round-resize');
+    quitCancelBtn.querySelector('h5').textContent = 'no, cancel';
+    roundRestartBtn.querySelector('h5').textContent = 'yes, restart';
+  } else {
+    quitCancelBtn.classList.replace('quit-resize', 'quit-btn');
+    roundRestartBtn.classList.replace('next-round-resize', 'nextround-restart-btn');
+    quitCancelBtn.querySelector('h5').textContent = 'quit';
+    roundRestartBtn.querySelector('h5').textContent = 'next round';
+  }
+
+  ;
+}
+
+function resetDialog() {
+  var dialogElemList = document.querySelectorAll("#dialog-box p, #dialog-box h3, #dialog-box svg");
+
+  var _iterator = _createForOfIteratorHelper(dialogElemList.entries()),
+      _step;
+
+  try {
+    for (_iterator.s(); !(_step = _iterator.n()).done;) {
+      var _step$value = _slicedToArray(_step.value, 2),
+          key = _step$value[0],
+          entrie = _step$value[1];
+
+      console.log(entrie);
+      entrie.classList.add('not-show-element');
+    }
+  } catch (err) {
+    _iterator.e(err);
+  } finally {
+    _iterator.f();
+  }
+
+  ;
+  iconContainer.classList.remove('not-show-element');
+  counterType = counterType < 10 ? ++counterType : counterType;
+} // dialog initializing
+
+
+var dialogBox = document.querySelector("#dialog-box"); // head
+
+var playerWonLost = document.querySelector('#dialog-box #player-won-lost');
+var won = document.querySelector('#dialog-box #won');
+var lost = document.querySelector('#dialog-box #lost'); // main take a round
+
+var iconContainer = document.querySelector("#msg-body .icon-container");
+var iconX = document.querySelector('#dialog-box #icon-x');
+var iconO = document.querySelector('#dialog-box #icon-o');
+var takesRound = document.querySelector('#dialog-box #takes-round'); // main Restart and Tied
+
+var restart = document.querySelector('#dialog-box #restart');
+var tied = document.querySelector('#dialog-box #tied'); // foot
+
+var quitCancelBtn = document.querySelector('#dialog-box footer #quit-cancel');
+var roundRestartBtn = document.querySelector('#dialog-box footer #round-restart');
+var type = {
+  first: 'player1-X',
+  second: 'player1-O',
+  third: 'player2-X',
+  fourth: 'player2-O',
+  fifth: 'won-X',
+  sixth: 'won-O',
+  seventh: 'lost-X',
+  eighth: 'lost-O',
+  nineth: 'restart',
+  tenth: 'tied'
+}; // Initialize
+// pages
+
 var newGame = document.querySelector('#new-game');
-var start = document.querySelector('#start');
-var message = document.querySelector('#msg-layer');
-var newGameButton = document.querySelector('#new-game footer button:first-child');
-var quit = document.querySelector('#msg-layer button:first-child');
-var cont = document.querySelector('#msg-layer button:last-child');
-newGameButton.addEventListener('click', function () {
-  newGame.classList.toggle('not-show-element');
-  console.log(newGame);
-  start.classList.toggle('not-show-element');
-  console.log(start);
+var start = document.querySelector('#start'); // creating mark object
+
+var mark = new Mark(); // creating player objects
+
+var player1 = new Player();
+var player2 = new Player(); // creating Turn OBJECT
+
+var turn = new Turn(); //adding event to choose the player1's mark
+
+for (var _i2 = 0, _arr2 = [mark.btnX, mark.btnO]; _i2 < _arr2.length; _i2++) {
+  var button = _arr2[_i2];
+  button.addEventListener('click', function () {
+    return mark.switch();
+  });
+} // player vs player addEventListener
+
+
+var playerVsPlayerButton = document.querySelector('#player1-vs-player2-button');
+playerVsPlayerButton.addEventListener('click', function () {
+  // initializing player objects
+  player1.mark = mark.p1Mark;
+  player1.name = 'P1';
+  player2.mark = mark.p2Mark;
+  player2.name = 'P2';
+  player1.initializeScore();
+  player2.initializeScore();
+  newGame.classList.add('not-show-element');
+  start.classList.remove('not-show-element');
 });
-start.addEventListener('click', function () {
-  message.classList.toggle('not-show-element');
+quitCancelBtn.addEventListener("click", function () {
+  return dialogBox.close();
 });
-quit.addEventListener('click', function () {
-  message.classList.toggle('not-show-element');
-  start.classList.toggle('not-show-element');
-  newGame.classList.toggle('not-show-element');
-});
-cont.addEventListener('click', function () {
-  message.classList.toggle('not-show-element');
-});
+dialogBox.addEventListener("close", resetDialog);
 },{}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -169,7 +434,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59703" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54484" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
