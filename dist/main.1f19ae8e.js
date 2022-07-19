@@ -132,7 +132,6 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
-// import {Mark, Player, Turn} from './modules/objects.js';
 // mark OBJECT
 var markPrototype = {
   updateMark: function updateMark() {
@@ -210,7 +209,7 @@ var turnPrototype = {
   },
   reset: function reset() {
     this.currentTurn = 'x';
-    this.previousTurn = '0';
+    this.previousTurn = 'o';
     this.show();
   }
 };
@@ -223,7 +222,96 @@ function Turn() {
 }
 
 Turn.prototype = turnPrototype;
-Turn.prototype.constructor = Turn; // dialog OBJECT
+Turn.prototype.constructor = Turn; // CELL OBJECT
+
+var cellPrototype = {
+  addClickEvent: function addClickEvent() {
+    var _this = this;
+
+    // \\3 must precede the id or var if you start it with a number
+    // let elem = document.querySelector(`#\\3${this.id}`);
+    this.element.addEventListener("click", clickEventHandler = function clickEventHandler() {
+      restartBtn.removeAttribute("disabled");
+
+      _this.showCellMark(turn.currentTurn);
+
+      _this.marked = turn.currentTurn;
+      turn.switch();
+      console.log(_this);
+
+      _this.removeClickEvent();
+
+      _this.activateHoverEvent();
+    });
+  },
+  removeClickEvent: function removeClickEvent() {
+    this.element.removeEventListener("click", clickEventHandler);
+  },
+  activateHoverEvent: function activateHoverEvent() {
+    var _this2 = this;
+
+    this.element.addEventListener("mouseover", mouseoverEventHandler = function mouseoverEventHandler() {
+      var markToShow = "outline-".concat(_this2.marked);
+
+      _this2.showCellMark(markToShow);
+    });
+    this.element.addEventListener("mouseleave", mouseleaveEventHandler = function mouseleaveEventHandler() {
+      var markToShow = _this2.marked;
+
+      _this2.showCellMark(markToShow);
+    });
+  },
+  deactivateHoverEvent: function deactivateHoverEvent() {
+    this.element.removeEventListener("mouseover", mouseoverEventHandler);
+    this.element.removeEventListener("mouseleave", mouseleaveEventHandler);
+    console.log("event disabled");
+  },
+  resetCell: function resetCell() {
+    this.showCellMark();
+    this.deactivateHoverEvent();
+    this.addClickEvent();
+  },
+  showCellMark: function showCellMark(mark) {
+    // reset: hiding all icons in this cell
+    var listOfIcons = this.element.querySelectorAll("svg");
+
+    var _iterator = _createForOfIteratorHelper(listOfIcons.entries()),
+        _step;
+
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var _step$value = _slicedToArray(_step.value, 2);
+
+        key = _step$value[0];
+        value = _step$value[1];
+        value.classList.add("not-show-element");
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+
+    if (mark) {
+      //making visible only the correspondent icon
+      var icon = event.currentTarget.querySelector(".icon-".concat(mark));
+      icon.classList.remove("not-show-element");
+    }
+  }
+};
+
+function Cell(id) {
+  this.marked = "";
+  this.id = id;
+  this.element = document.querySelector("#\\3".concat(this.id));
+}
+
+Cell.prototype = cellPrototype;
+Cell.prototype.constructor = Cell; // CellsGrid Object
+// const cellsGridPrototype = {
+//
+// }
+// dialog
 
 function configure(kind) {
   switch (kind) {
@@ -318,22 +406,22 @@ function configure(kind) {
 function resetDialog() {
   var dialogElemList = document.querySelectorAll("#dialog-box p, #dialog-box h3, #dialog-box svg");
 
-  var _iterator = _createForOfIteratorHelper(dialogElemList.entries()),
-      _step;
+  var _iterator2 = _createForOfIteratorHelper(dialogElemList.entries()),
+      _step2;
 
   try {
-    for (_iterator.s(); !(_step = _iterator.n()).done;) {
-      var _step$value = _slicedToArray(_step.value, 2),
-          key = _step$value[0],
-          entrie = _step$value[1];
+    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+      var _step2$value = _slicedToArray(_step2.value, 2),
+          _key = _step2$value[0],
+          entrie = _step2$value[1];
 
       console.log(entrie);
       entrie.classList.add('not-show-element');
     }
   } catch (err) {
-    _iterator.e(err);
+    _iterator2.e(err);
   } finally {
-    _iterator.f();
+    _iterator2.f();
   }
 
   ;
@@ -391,6 +479,7 @@ for (var _i2 = 0, _arr2 = [mark.btnX, mark.btnO]; _i2 < _arr2.length; _i2++) {
 
 
 var playerVsPlayerButton = document.querySelector('#player1-vs-player2-button');
+var cell = new Cell("2");
 playerVsPlayerButton.addEventListener('click', function () {
   // initializing player objects
   player1.mark = mark.p1Mark;
@@ -401,11 +490,23 @@ playerVsPlayerButton.addEventListener('click', function () {
   player2.initializeScore();
   newGame.classList.add('not-show-element');
   start.classList.remove('not-show-element');
-});
+  cell.addClickEvent(turn.currentTurn);
+}); // dialog events
+
 quitCancelBtn.addEventListener("click", function () {
   return dialogBox.close();
 });
-dialogBox.addEventListener("close", resetDialog);
+dialogBox.addEventListener("close", resetDialog); //reset
+
+var restartBtn = document.getElementById("restart-button");
+
+function restartAllCells() {
+  cell.resetCell();
+  turn.reset();
+  restartBtn.setAttribute("disabled", "");
+}
+
+restartBtn.addEventListener("click", restartAllCells);
 },{}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -434,7 +535,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54484" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60591" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

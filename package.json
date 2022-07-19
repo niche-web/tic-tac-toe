@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/niche-web/tic-tac-toe#readme",
   "dependencies": {
+    "atom-package-manager": "^2.6.5",
     "objects.js": "^1.0.1"
   },
   "devDependencies": {

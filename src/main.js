@@ -1,4 +1,3 @@
-// import {Mark, Player, Turn} from './modules/objects.js';
 // mark OBJECT
 const markPrototype = {
   updateMark() {
@@ -10,12 +9,13 @@ const markPrototype = {
       this.p1Mark = 'o';
     }
   },
-  switch() {
+  switch () {
     this.btnX.classList.toggle('active-mark-button');
     this.btnO.classList.toggle('active-mark-button');
     this.updateMark();
   },
 };
+
 function Mark() {
   this.p1Mark = 'x';
   this.p2Mark = 'o';
@@ -57,7 +57,7 @@ Player.prototype.constructor = Player;
 
 // Turn OBJECT
 const turnPrototype = {
-  switch() {
+  switch () {
     let thirdRecipe;
     thirdRecipe = this.currentTurn;
     this.currentTurn = this.previousTurn;
@@ -72,10 +72,11 @@ const turnPrototype = {
   },
   reset() {
     this.currentTurn = 'x';
-    this.previousTurn = '0';
+    this.previousTurn = 'o';
     this.show();
   },
 };
+
 function Turn() {
   this.currentTurn = 'x';
   this.previousTurn = 'o';
@@ -84,139 +85,204 @@ function Turn() {
 }
 Turn.prototype = turnPrototype;
 Turn.prototype.constructor = Turn;
+// CELL OBJECT
+const cellPrototype = {
+  addClickEvent() {
+    // \\3 must precede the id or var if you start it with a number
+    // let elem = document.querySelector(`#\\3${this.id}`);
+    this.element.addEventListener("click", clickEventHandler = () => {
+      restartBtn.removeAttribute("disabled");
+      this.showCellMark(turn.currentTurn);
+      this.marked = turn.currentTurn;
+      turn.switch();
+      console.log(this);
+      this.removeClickEvent();
+      this.activateHoverEvent();
+    });
+  },
+  removeClickEvent() {
+    this.element.removeEventListener("click", clickEventHandler);
+  },
+  activateHoverEvent() {
+    this.element.addEventListener("mouseover", mouseoverEventHandler = () => {
+      let markToShow = `outline-${this.marked}`
+      this.showCellMark(markToShow);
+    });
+    this.element.addEventListener("mouseleave", mouseleaveEventHandler = () => {
+      let markToShow = this.marked;
+      this.showCellMark(markToShow);
+    });
 
-// dialog OBJECT
-  function configure(kind) {
-    switch (kind) {
-      case type.first:
-        playerWonLost.classList.remove('not-show-element');
-        playerWonLost.querySelector('.player-number').textContent = "1";
-        iconX.classList.remove('not-show-element');
-        takesRound.classList.remove('not-show-element');
-        takesRound.style.color = iconX.querySelector('path').getAttribute("fill");
-        break;
-      case type.second:
-        playerWonLost.classList.remove('not-show-element');
-        playerWonLost.querySelector('.player-number').textContent = "1";
-        iconO.classList.remove('not-show-element');
-        takesRound.classList.remove('not-show-element');
-        takesRound.style.color =
-          iconO.querySelector('path').getAttribute("fill");
-        break;
-        case type.third:
-        playerWonLost.classList.remove('not-show-element');
-        playerWonLost.querySelector('.player-number').textContent = "2";
-        iconX.classList.remove('not-show-element');
-        takesRound.classList.remove('not-show-element');
-        takesRound.style.color =
-          iconX.querySelector('path').getAttribute("fill");
-        break;
-        case type.fourth:
-        playerWonLost.classList.remove('not-show-element');
-        playerWonLost.querySelector('.player-number').textContent = "2";
-        iconO.classList.remove('not-show-element');
-        takesRound.classList.remove('not-show-element');
-        takesRound.style.color =
-          iconO.querySelector('path').getAttribute("fill");
-        break;
-      case type.fifth:
-        won.classList.remove('not-show-element');
-        iconX.classList.remove('not-show-element');
-        takesRound.classList.remove('not-show-element');
-        takesRound.style.color =
-          iconX.querySelector('path').getAttribute("fill");
-        break;
-      case type.sixth:
-      console.log(won);
-        won.classList.remove('not-show-element');
-        console.log(won);
-        iconO.classList.remove('not-show-element');
-        takesRound.classList.remove('not-show-element');
-        takesRound.style.color =
-          iconO.querySelector('path').getAttribute("fill");
-        break;
-      case type.seventh:
-        lost.classList.remove('not-show-element');
-        iconX.classList.remove('not-show-element');
-        takesRound.classList.remove('not-show-element');
-        takesRound.style.color =
-          iconX.querySelector('path').getAttribute("fill");
-        break;
-      case type.eighth:
-        lost.classList.remove('not-show-element');
-        iconO.classList.remove('not-show-element');
-        takesRound.classList.remove('not-show-element');
-        takesRound.style.color =
-          iconO.querySelector('path').getAttribute("fill");
-        break;
-      case type.nineth:
-      iconContainer.classList.add('not-show-element');
-        restart.classList.remove('not-show-element');
-        break;
-      case type.tenth:
-      iconContainer.classList.add('not-show-element');
-        tied.classList.remove('not-show-element');
-        break;
+  },
+  deactivateHoverEvent() {
+    this.element.removeEventListener("mouseover", mouseoverEventHandler);
+    this.element.removeEventListener("mouseleave", mouseleaveEventHandler);
+    console.log("event disabled");
+  },
+  resetCell() {
+    this.showCellMark();
+    this.deactivateHoverEvent();
+    this.addClickEvent();
+  },
+  showCellMark(mark) {
+    // reset: hiding all icons in this cell
+    let listOfIcons = this.element.querySelectorAll("svg");
+    for ([key, value] of listOfIcons.entries()) {
+      value.classList.add("not-show-element");
     }
-    if (kind === type.nineth) {
-      quitCancelBtn.classList.replace('quit-btn', 'quit-resize');
-      roundRestartBtn.classList.replace(
-        'nextround-restart-btn',
-        'next-round-resize'
-      );
-      quitCancelBtn.querySelector('h5').textContent = 'no, cancel';
-      roundRestartBtn.querySelector('h5').textContent =
-        'yes, restart';
-    } else {
-      quitCancelBtn.classList.replace('quit-resize', 'quit-btn');
-      roundRestartBtn.classList.replace(
-        'next-round-resize',
-        'nextround-restart-btn'
-      );
-      quitCancelBtn.querySelector('h5').textContent = 'quit';
-      roundRestartBtn.querySelector('h5').textContent = 'next round';
-    };
+    if (mark) {
+      //making visible only the correspondent icon
+      let icon = event.currentTarget.querySelector(`.icon-${mark}`);
+      icon.classList.remove("not-show-element")
+    }
+
+  },
+};
+
+function Cell(id) {
+  this.marked = "";
+  this.id = id;
+  this.element = document.querySelector(`#\\3${this.id}`);
+}
+Cell.prototype = cellPrototype;
+Cell.prototype.constructor = Cell;
+// CellsGrid Object
+// const cellsGridPrototype = {
+//
+// }
+// dialog
+function configure(kind) {
+  switch (kind) {
+    case type.first:
+      playerWonLost.classList.remove('not-show-element');
+      playerWonLost.querySelector('.player-number').textContent = "1";
+      iconX.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color = iconX.querySelector('path').getAttribute("fill");
+      break;
+    case type.second:
+      playerWonLost.classList.remove('not-show-element');
+      playerWonLost.querySelector('.player-number').textContent = "1";
+      iconO.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color =
+        iconO.querySelector('path').getAttribute("fill");
+      break;
+    case type.third:
+      playerWonLost.classList.remove('not-show-element');
+      playerWonLost.querySelector('.player-number').textContent = "2";
+      iconX.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color =
+        iconX.querySelector('path').getAttribute("fill");
+      break;
+    case type.fourth:
+      playerWonLost.classList.remove('not-show-element');
+      playerWonLost.querySelector('.player-number').textContent = "2";
+      iconO.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color =
+        iconO.querySelector('path').getAttribute("fill");
+      break;
+    case type.fifth:
+      won.classList.remove('not-show-element');
+      iconX.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color =
+        iconX.querySelector('path').getAttribute("fill");
+      break;
+    case type.sixth:
+      console.log(won);
+      won.classList.remove('not-show-element');
+      console.log(won);
+      iconO.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color =
+        iconO.querySelector('path').getAttribute("fill");
+      break;
+    case type.seventh:
+      lost.classList.remove('not-show-element');
+      iconX.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color =
+        iconX.querySelector('path').getAttribute("fill");
+      break;
+    case type.eighth:
+      lost.classList.remove('not-show-element');
+      iconO.classList.remove('not-show-element');
+      takesRound.classList.remove('not-show-element');
+      takesRound.style.color =
+        iconO.querySelector('path').getAttribute("fill");
+      break;
+    case type.nineth:
+      iconContainer.classList.add('not-show-element');
+      restart.classList.remove('not-show-element');
+      break;
+    case type.tenth:
+      iconContainer.classList.add('not-show-element');
+      tied.classList.remove('not-show-element');
+      break;
   }
-  function resetDialog() {
-    const dialogElemList = document.querySelectorAll("#dialog-box p, #dialog-box h3, #dialog-box svg");
-    for (let [key, entrie] of dialogElemList.entries()) {
-      console.log(entrie);
-      entrie.classList.add('not-show-element');
-    };
-    iconContainer.classList.remove('not-show-element');
-    counterType = counterType < 10 ? ++counterType:counterType
+  if (kind === type.nineth) {
+    quitCancelBtn.classList.replace('quit-btn', 'quit-resize');
+    roundRestartBtn.classList.replace(
+      'nextround-restart-btn',
+      'next-round-resize'
+    );
+    quitCancelBtn.querySelector('h5').textContent = 'no, cancel';
+    roundRestartBtn.querySelector('h5').textContent =
+      'yes, restart';
+  } else {
+    quitCancelBtn.classList.replace('quit-resize', 'quit-btn');
+    roundRestartBtn.classList.replace(
+      'next-round-resize',
+      'nextround-restart-btn'
+    );
+    quitCancelBtn.querySelector('h5').textContent = 'quit';
+    roundRestartBtn.querySelector('h5').textContent = 'next round';
+  };
+}
+
+function resetDialog() {
+  const dialogElemList = document.querySelectorAll("#dialog-box p, #dialog-box h3, #dialog-box svg");
+  for (let [key, entrie] of dialogElemList.entries()) {
+    console.log(entrie);
+    entrie.classList.add('not-show-element');
+  };
+  iconContainer.classList.remove('not-show-element');
+  counterType = counterType < 10 ? ++counterType : counterType
 }
 // dialog initializing
 const dialogBox = document.querySelector("#dialog-box");
 // head
-    const playerWonLost = document.querySelector('#dialog-box #player-won-lost');
-    const won = document.querySelector('#dialog-box #won');
-    const lost = document.querySelector('#dialog-box #lost');
+const playerWonLost = document.querySelector('#dialog-box #player-won-lost');
+const won = document.querySelector('#dialog-box #won');
+const lost = document.querySelector('#dialog-box #lost');
 // main take a round
 const iconContainer = document.querySelector("#msg-body .icon-container");
-      const iconX = document.querySelector('#dialog-box #icon-x');
-      const iconO = document.querySelector('#dialog-box #icon-o');
-      const takesRound = document.querySelector('#dialog-box #takes-round');
+const iconX = document.querySelector('#dialog-box #icon-x');
+const iconO = document.querySelector('#dialog-box #icon-o');
+const takesRound = document.querySelector('#dialog-box #takes-round');
 // main Restart and Tied
-    const restart = document.querySelector('#dialog-box #restart');
-    const tied = document.querySelector('#dialog-box #tied');
+const restart = document.querySelector('#dialog-box #restart');
+const tied = document.querySelector('#dialog-box #tied');
 // foot
-    const quitCancelBtn = document.querySelector('#dialog-box footer #quit-cancel');
-    const roundRestartBtn = document.querySelector(
-      '#dialog-box footer #round-restart');
+const quitCancelBtn = document.querySelector('#dialog-box footer #quit-cancel');
+const roundRestartBtn = document.querySelector(
+  '#dialog-box footer #round-restart');
 
-  const type = {
-    first: 'player1-X',
-    second: 'player1-O',
-    third: 'player2-X',
-    fourth: 'player2-O',
-    fifth: 'won-X',
-    sixth: 'won-O',
-    seventh: 'lost-X',
-    eighth: 'lost-O',
-    nineth: 'restart',
-    tenth: 'tied',
-  };
+const type = {
+  first: 'player1-X',
+  second: 'player1-O',
+  third: 'player2-X',
+  fourth: 'player2-O',
+  fifth: 'won-X',
+  sixth: 'won-O',
+  seventh: 'lost-X',
+  eighth: 'lost-O',
+  nineth: 'restart',
+  tenth: 'tied',
+};
 // Initialize
 // pages
 const newGame = document.querySelector('#new-game');
@@ -238,7 +304,8 @@ for (let button of [mark.btnX, mark.btnO]) {
 const playerVsPlayerButton = document.querySelector(
   '#player1-vs-player2-button'
 );
-playerVsPlayerButton.addEventListener('click', function () {
+const cell = new Cell("2");
+playerVsPlayerButton.addEventListener('click', function() {
   // initializing player objects
   player1.mark = mark.p1Mark;
   player1.name = 'P1';
@@ -248,6 +315,17 @@ playerVsPlayerButton.addEventListener('click', function () {
   player2.initializeScore();
   newGame.classList.add('not-show-element');
   start.classList.remove('not-show-element');
+
+  cell.addClickEvent(turn.currentTurn);
 });
-quitCancelBtn.addEventListener("click",()=>dialogBox.close() );
+// dialog events
+quitCancelBtn.addEventListener("click", () => dialogBox.close());
 dialogBox.addEventListener("close", resetDialog);
+//reset
+const restartBtn = document.getElementById("restart-button");
+function restartAllCells(){
+  cell.resetCell();
+  turn.reset();
+  restartBtn.setAttribute("disabled", "");
+}
+restartBtn.addEventListener("click", restartAllCells);

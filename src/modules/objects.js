@@ -1,5 +1,6 @@
-export {Mark, Player, Turn};
+export {Mark, Player, Turn, Cell};
 // mark OBJECT
+const turn = new Turn;
 const markPrototype = {
   updateMark() {
     if (this.btnX.classList.contains('active-mark-button')) {
@@ -85,96 +86,30 @@ function Turn() {
 Turn.prototype = turnPrototype;
 Turn.prototype.constructor = Turn;
 
-// dialog OBJECT
-const dialogBoxPrototype = {
-  configure(kind) {
-    switch (kind) {
-      case this.type.first:
-        this.head.playerWonLost.classList.remove('not-show-element');
-        this.head.playerWonLost.querySelector('.player-number').textContent = 1;
-        this.main.takeARound.iconX.classList.remove('not-show-element');
-        this.main.takeARound.takesRound.classList.remove('not-show-element');
-        this.main.takeARound.takesRound.style.color = this.main.takeARound.iconX
-          .querySelector('path')
-          .getAttribute('fill');
-        break;
-      case this.type.second:
-        this.head.playerWonLost.classList.remove('not-show-element');
-        this.head.playerWonLost.querySelector('.player-number').textContent = 1;
-        this.main.takeARound.iconO.classList.remove('not-show-element');
-        this.main.takeARound.takesRound.classList.remove('not-show-element');
-        this.main.takeARound.takesRound.style.color =
-          this.main.takeARound.iconO.querySelector('path').style.fill;
-        break;
-      case this.type.third:
-        this.head.playerwonLost.classList.remove('not-show-element');
-        this.head.playerWonLost.querySelector('.player-number').textContent = 2;
-        this.main.takeARound.iconX.classList.remove('not-show-element');
-        this.main.takeARound.takesRound.classList.remove('not-show-element');
-        this.main.takeARound.takesRound.style.color =
-          this.main.takeARound.iconX.querySelector('path').style.fill;
-        break;
-      case this.type.fourth:
-        this.head.playerWonLost.classList.remove('not-show-element');
-        this.head.playerWonLost.querySelector('.player-number').textContent = 2;
-        this.main.takeARound.iconO.classList.remove('not-show-element');
-        this.main.takeARound.takesRound.classList.remove('not-show-element');
-        this.main.takeARound.takesRound.style.color =
-          this.main.takeARound.iconO.querySelector('path').style.fill;
-        break;
-      case this.type.fifth:
-        this.head.won.remove('not-show-element');
-        this.main.takeARound.iconX.classList.remove('not-show-element');
-        this.main.takesRound.classList.remove('not-show-element');
-        break;
-      case this.type.sixth:
-        this.head.won.remove('not-show-element');
-        this.main.takeARound.iconO.classList.remove('not-show-element');
-        this.main.takesRound.classList.remove('not-show-element');
-        break;
-      case this.type.seventh:
-        this.head.lost.remove('not-show-element');
-        this.main.takeARound.iconX.classList.remove('not-show-element');
-        this.main.takesRound.classList.remove('not-show-element');
-        break;
-      case this.type.eighth:
-        this.head.lost.remove('not-show-element');
-        this.main.takeARound.iconO.classList.remove('not-show-element');
-        this.main.takesRound.classList.remove('not-show-element');
-        break;
-      case this.type.nineth:
-        this.main.restart.classList.remove('not-show-element');
-        break;
-      case this.type.thenth:
-        this.main.tied.classList.remove('not-show-element');
-        break;
-    }
-    if (kind === this.type.nineth) {
-      this.foot.quitCancelBtn.classList.replace('quit-btn', 'quit-resize');
-      this.foot.roundRestartBtn.classList.replace(
-        'nextround-restart-btn',
-        'next-round-resize'
-      );
-      this.foot.quitCancelBtn.querySelector('h5').textContent = 'no, cancel';
-      this.foot.roundRestartBtn.querySelector('h5').textContent =
-        'yes, restart';
-    } else {
-      this.foot.quitCancelBtn.classList.replace('quit-resize', 'quit-btn');
-      this.foot.roundRestartBtn.classList.replace(
-        'next-round-resize',
-        'nextround-restart-btn'
-      );
-      this.foot.quitCancelBtn.querySelector('h5').textContent = 'quit';
-      this.foot.roundRestartBtn.querySelector('h5').textContent = 'next round';
-    }
+// CELL OBJECT
+const cellPrototype = {
+  addClick(imageToShow){
+    let elem = document.querySelector(`#\\3${this.id}`);
+    elem.addEventListener("click", (e)=>{
+      let iconToShow = e.currentTarget.querySelector(`.icon-${imageToShow}`);
+      iconToShow.classList.remove("not-show-element");
+      // this.removeClick();
+    });
   },
-  reset() {
-    for (let [key, value] of Object.entries(this.head)) {
-      value.classList.add('not-show-element');
-    for (let [key, value] of Object.entries(this.main.takeARound)) {
-      value.classList.add('not-show-element');
-    for (let [key, value] of Object.entries(this.main)) {
-      console.log(value);
-      // value.classList.add('not-show-element');
-    }
+  removeClick(){
+    let elem = document.querySelector(`#\\3${this.id}`);
+    elem.removeEventListener("click",(e)=>{});
+  },
+  addHover(){},
+  removeHover(){},
+  reset(){},
+  showMark(markToShow,event){
+    console.log(this);
+  },
 };
+function Cell(id){
+  this.marked = "";
+  this.id = id;
+}
+Cell.prototype = cellPrototype;
+Cell.prototype.constructor = Cell;
