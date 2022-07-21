@@ -225,54 +225,35 @@ Turn.prototype = turnPrototype;
 Turn.prototype.constructor = Turn; // CELL OBJECT
 
 var cellPrototype = {
+  markAsWinner: function markAsWinner() {
+    var shownIcon = this.element.querySelector(".icon-".concat(this.marked));
+    this.element.style.backgroundColor = shownIcon.querySelector("path").getAttribute("fill");
+    shownIcon.querySelector("path").setAttribute("fill", "rgba(31, 54, 65)");
+  },
   addClickEvent: function addClickEvent() {
-    var _this = this;
-
-    // \\3 must precede the id or var if you start it with a number
-    // let elem = document.querySelector(`#\\3${this.id}`);
-    this.element.addEventListener("click", clickEventHandler = function clickEventHandler() {
-      restartBtn.removeAttribute("disabled");
-
-      _this.showCellMark(turn.currentTurn);
-
-      _this.marked = turn.currentTurn;
-      turn.switch();
-      console.log(_this);
-
-      _this.removeClickEvent();
-
-      _this.activateHoverEvent();
-    });
+    this.clickEventHandler = this.clickEventHandler.bind(this);
+    this.element.addEventListener("click", this.clickEventHandler, false);
   },
   removeClickEvent: function removeClickEvent() {
-    this.element.removeEventListener("click", clickEventHandler);
+    this.element.removeEventListener("click", this.clickEventHandler, false);
   },
   activateHoverEvent: function activateHoverEvent() {
-    var _this2 = this;
-
-    this.element.addEventListener("mouseover", mouseoverEventHandler = function mouseoverEventHandler() {
-      var markToShow = "outline-".concat(_this2.marked);
-
-      _this2.showCellMark(markToShow);
-    });
-    this.element.addEventListener("mouseleave", mouseleaveEventHandler = function mouseleaveEventHandler() {
-      var markToShow = _this2.marked;
-
-      _this2.showCellMark(markToShow);
-    });
+    this.hoverEventHandler = this.hoverEventHandler.bind(this);
+    this.element.addEventListener("mouseover", this.hoverEventHandler, false);
+    this.element.addEventListener("mouseleave", this.hoverEventHandler, false);
   },
   deactivateHoverEvent: function deactivateHoverEvent() {
-    this.element.removeEventListener("mouseover", mouseoverEventHandler);
-    this.element.removeEventListener("mouseleave", mouseleaveEventHandler);
-    console.log("event disabled");
+    // console.log( this.hoverEvent.mouseoverFunction );
+    this.element.removeEventListener("mouseover", this.hoverEventHandler, false);
+    this.element.removeEventListener("mouseleave", this.hoverEventHandler, false);
   },
   resetCell: function resetCell() {
-    this.showCellMark();
     this.deactivateHoverEvent();
+    this.showCellMark();
     this.addClickEvent();
+    this.resetCellBackgroundAndSvgsFill();
   },
-  showCellMark: function showCellMark(mark) {
-    // reset: hiding all icons in this cell
+  resetCellBackgroundAndSvgsFill: function resetCellBackgroundAndSvgsFill() {
     var listOfIcons = this.element.querySelectorAll("svg");
 
     var _iterator = _createForOfIteratorHelper(listOfIcons.entries()),
@@ -284,12 +265,40 @@ var cellPrototype = {
 
         key = _step$value[0];
         value = _step$value[1];
-        value.classList.add("not-show-element");
+
+        if (value.classList.contains("icon-x")) {
+          value.querySelector("path").setAttribute("fill", "#31C3BD");
+        } else if (value.classList.contains("icon-o")) {
+          value.querySelector("path").setAttribute("fill", "#F2B137");
+        }
       }
     } catch (err) {
       _iterator.e(err);
     } finally {
       _iterator.f();
+    }
+
+    this.element.removeAttribute("style");
+  },
+  showCellMark: function showCellMark(mark) {
+    // reset: hiding all icons in this cell
+    var listOfIcons = this.element.querySelectorAll("svg");
+
+    var _iterator2 = _createForOfIteratorHelper(listOfIcons.entries()),
+        _step2;
+
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        var _step2$value = _slicedToArray(_step2.value, 2);
+
+        key = _step2$value[0];
+        value = _step2$value[1];
+        value.classList.add("not-show-element");
+      }
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
     }
 
     if (mark) {
@@ -302,18 +311,284 @@ var cellPrototype = {
 
 function Cell(id) {
   this.marked = "";
-  this.id = id;
+  this.id = id; // \\3 must precede the id or var if you start it with a number
+
   this.element = document.querySelector("#\\3".concat(this.id));
+
+  this.hoverEventHandler = function (event) {
+    var markToShow;
+
+    switch (event.type) {
+      case "mouseover":
+        markToShow = "outline-".concat(this.marked);
+        break;
+
+      case "mouseleave":
+        markToShow = this.marked;
+        break;
+    }
+
+    this.showCellMark(markToShow);
+  };
+
+  this.clickEventHandler = function (event) {
+    restartBtn.removeAttribute("disabled");
+    this.showCellMark(turn.currentTurn);
+    this.marked = turn.currentTurn;
+    cellsGrid.clickCentinel(this.marked, this.playerName, this.id);
+    turn.switch();
+    this.removeClickEvent();
+    this.activateHoverEvent();
+  };
 }
 
 Cell.prototype = cellPrototype;
 Cell.prototype.constructor = Cell; // CellsGrid Object
-// const cellsGridPrototype = {
-//
-// }
-// dialog
 
-function configure(kind) {
+var cellsGridPrototype = {
+  init: function init() {
+    var cellArrayPosition;
+    var cellElements = document.querySelectorAll("#start #cells > div");
+
+    var _iterator3 = _createForOfIteratorHelper(cellElements.entries()),
+        _step3;
+
+    try {
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        var _step3$value = _slicedToArray(_step3.value, 2);
+
+        key = _step3$value[0];
+        cellElement = _step3$value[1];
+        var cell = new Cell(cellElement.id);
+        cell.element = cellElement;
+        cell.addClickEvent();
+        cellArrayPosition = Number(cellElement.id) - 1;
+        this.cells.splice(cellArrayPosition, 1, cell);
+      }
+    } catch (err) {
+      _iterator3.e(err);
+    } finally {
+      _iterator3.f();
+    }
+
+    this.xCells.playerName = player1.mark === "x" ? player1.name : player2.name;
+    this.oCells.playerName = player1.mark === "o" ? player1.name : player2.name;
+  },
+  clickCentinel: function clickCentinel(mark, name, cellId) {
+    this.totalClicks++;
+
+    switch (mark) {
+      case "x":
+        this.xCells.ids.push(Number(cellId));
+        break;
+
+      case "o":
+        this.oCells.ids.push(Number(cellId));
+        break;
+    }
+
+    this.winnerCentinel(mark);
+  },
+  winnerCentinel: function winnerCentinel(markToCheck) {
+    initialArray = this["".concat(markToCheck, "Cells")].ids.map(function (x) {
+      return x;
+    });
+    var finalArray = [];
+    var length = initialArray.length;
+    var sum = initialArray.reduce(function (previous, current) {
+      return previous + current;
+    });
+
+    if (length === 3 && sum === 15) {
+      finalArray = initialArray.map(function (x) {
+        return x;
+      });
+      this.summary(markToCheck, finalArray);
+      return;
+    }
+
+    if (length > 3) {
+      if (length === 4) {
+        var matriz = [[0, 1, 3], [0, 2, 3], [1, 2, 3]];
+      } else {
+        matriz = [[0, 1, 4], [0, 2, 4], [0, 3, 4], [1, 2, 4], [1, 3, 4], [2, 3, 4]];
+      }
+
+      var _iterator4 = _createForOfIteratorHelper(matriz),
+          _step4;
+
+      try {
+        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+          var matrizElem = _step4.value;
+
+          var _iterator5 = _createForOfIteratorHelper(matrizElem),
+              _step5;
+
+          try {
+            for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+              var _value = _step5.value;
+              finalArray.push(this["".concat(markToCheck, "Cells")].ids[_value]);
+            }
+          } catch (err) {
+            _iterator5.e(err);
+          } finally {
+            _iterator5.f();
+          }
+
+          sum = finalArray.reduce(function (previous, current) {
+            return previous + current;
+          });
+
+          if (sum === 15) {
+            this.summary(markToCheck, finalArray);
+            return;
+          } else {
+            finalArray = [];
+          }
+        }
+      } catch (err) {
+        _iterator4.e(err);
+      } finally {
+        _iterator4.f();
+      }
+
+      if (this.totalClicks === 9) {
+        this.summary();
+        return;
+      }
+    }
+  },
+  summary: function summary() {
+    var markWon = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+    var winnerCells = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
+
+    switch (markWon) {
+      case "x":
+        this.won.mark = "x";
+        this.won.playerName = this.xCells.playerName;
+        this.won.cellsId = winnerCells.map(function (x) {
+          return x;
+        });
+        break;
+
+      case "o":
+        this.won.mark = "o";
+        this.won.playerName = this.oCells.playerName;
+        this.won.cellsId = winnerCells.map(function (x) {
+          return x;
+        });
+        break;
+    }
+
+    this.markWinnerCells(this.won.cellsId);
+    dialogBox.show();
+    this.showDialog();
+  },
+  showDialog: function showDialog() {
+    var mark = this.won.mark;
+    var player = this.won.playerName;
+
+    if (mark === "") {
+      configurePoppupDialog("tied");
+    }
+
+    switch (player) {
+      case "P1":
+        if (mark === "x") {
+          if (player2.name === "CPU") {
+            configurePoppupDialog("won-X");
+          } else {
+            configurePoppupDialog("player1-X");
+          }
+        } else if (mark === "o") {
+          if (player2.name === "CPU") {
+            configurePoppupDialog("won-O");
+          } else {
+            configurePoppupDialog("player1-O");
+          }
+        }
+
+        break;
+
+      case "P2":
+        if (mark === "x") {
+          configurePoppupDialog("player2-X");
+        } else if (mark === "o") {
+          configurePoppupDialog("player2-O");
+        }
+
+        break;
+
+      case "CPU":
+        if (mark === "x") {
+          configurePoppupDialog("lost-X");
+        } else if (mark === "o") {
+          configurePoppupDialog("lost-O");
+        }
+
+        break;
+    }
+  },
+  resetGrid: function resetGrid() {
+    var _iterator6 = _createForOfIteratorHelper(this.cells),
+        _step6;
+
+    try {
+      for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+        cellElement = _step6.value;
+        cellElement.resetCell();
+      }
+    } catch (err) {
+      _iterator6.e(err);
+    } finally {
+      _iterator6.f();
+    }
+
+    this.won.cellsId = [];
+    this.xCells.ids = [];
+    this.oCells.ids = [];
+  },
+  markWinnerCells: function markWinnerCells(cellsIds) {
+    var _iterator7 = _createForOfIteratorHelper(cellsIds),
+        _step7;
+
+    try {
+      for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+        cellId = _step7.value;
+        var pos = cellId - 1;
+        this.cells[pos].markAsWinner();
+      }
+    } catch (err) {
+      _iterator7.e(err);
+    } finally {
+      _iterator7.f();
+    }
+  },
+  deactivateCellsClick: function deactivateCellsClick() {}
+};
+
+function CellsGrid() {
+  this.xCells = {
+    playerName: "",
+    ids: []
+  };
+  this.oCells = {
+    playerName: "",
+    ids: []
+  };
+  this.won = {
+    playerName: "",
+    cellsId: [],
+    mark: ""
+  };
+  this.cells = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  this.totalClicks = 0;
+}
+
+CellsGrid.prototype = cellsGridPrototype;
+CellsGrid.prototype.constructor = CellsGrid; // dialog
+
+function configurePoppupDialog(kind) {
   switch (kind) {
     case type.first:
       playerWonLost.classList.remove('not-show-element');
@@ -406,27 +681,26 @@ function configure(kind) {
 function resetDialog() {
   var dialogElemList = document.querySelectorAll("#dialog-box p, #dialog-box h3, #dialog-box svg");
 
-  var _iterator2 = _createForOfIteratorHelper(dialogElemList.entries()),
-      _step2;
+  var _iterator8 = _createForOfIteratorHelper(dialogElemList.entries()),
+      _step8;
 
   try {
-    for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-      var _step2$value = _slicedToArray(_step2.value, 2),
-          _key = _step2$value[0],
-          entrie = _step2$value[1];
+    for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+      var _step8$value = _slicedToArray(_step8.value, 2),
+          _key = _step8$value[0],
+          entrie = _step8$value[1];
 
-      console.log(entrie);
       entrie.classList.add('not-show-element');
     }
   } catch (err) {
-    _iterator2.e(err);
+    _iterator8.e(err);
   } finally {
-    _iterator2.f();
+    _iterator8.f();
   }
 
   ;
   iconContainer.classList.remove('not-show-element');
-  counterType = counterType < 10 ? ++counterType : counterType;
+  var counterType = counterType < 10 ? ++counterType : counterType;
 } // dialog initializing
 
 
@@ -479,18 +753,18 @@ for (var _i2 = 0, _arr2 = [mark.btnX, mark.btnO]; _i2 < _arr2.length; _i2++) {
 
 
 var playerVsPlayerButton = document.querySelector('#player1-vs-player2-button');
-var cell = new Cell("2");
+var cellsGrid = new CellsGrid();
 playerVsPlayerButton.addEventListener('click', function () {
   // initializing player objects
   player1.mark = mark.p1Mark;
   player1.name = 'P1';
   player2.mark = mark.p2Mark;
-  player2.name = 'P2';
+  player2.name = 'CPU';
   player1.initializeScore();
   player2.initializeScore();
   newGame.classList.add('not-show-element');
   start.classList.remove('not-show-element');
-  cell.addClickEvent(turn.currentTurn);
+  cellsGrid.init();
 }); // dialog events
 
 quitCancelBtn.addEventListener("click", function () {
@@ -501,9 +775,10 @@ dialogBox.addEventListener("close", resetDialog); //reset
 var restartBtn = document.getElementById("restart-button");
 
 function restartAllCells() {
-  cell.resetCell();
+  cellsGrid.resetGrid();
   turn.reset();
   restartBtn.setAttribute("disabled", "");
+  cellsGrid.totalClicks = 0;
 }
 
 restartBtn.addEventListener("click", restartAllCells);
@@ -535,7 +810,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60591" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57348" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
