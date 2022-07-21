@@ -148,7 +148,7 @@ var markPrototype = {
     this.btnO.classList.toggle('active-mark-button');
     this.updateMark();
   }
-};
+}; // Mark constructor function
 
 function Mark() {
   this.p1Mark = 'x';
@@ -238,13 +238,16 @@ var cellPrototype = {
     this.element.removeEventListener("click", this.clickEventHandler, false);
   },
   activateHoverEvent: function activateHoverEvent() {
-    this.hoverEventHandler = this.hoverEventHandler.bind(this);
-    this.element.addEventListener("mouseover", this.hoverEventHandler, false);
-    this.element.addEventListener("mouseleave", this.hoverEventHandler, false);
+    // checking if the device has pointer
+    if (matchMedia('(pointer:fine)').matches || matchMedia('(pointer:coarse)').matches) {
+      this.hoverEventHandler = this.hoverEventHandler.bind(this);
+      this.element.addEventListener("mouseenter", this.hoverEventHandler, false);
+      this.element.addEventListener("mouseleave", this.hoverEventHandler, false);
+    }
   },
   deactivateHoverEvent: function deactivateHoverEvent() {
-    // console.log( this.hoverEvent.mouseoverFunction );
-    this.element.removeEventListener("mouseover", this.hoverEventHandler, false);
+    // console.log( this.hoverEvent.mouseenterFunction );
+    this.element.removeEventListener("mouseenter", this.hoverEventHandler, false);
     this.element.removeEventListener("mouseleave", this.hoverEventHandler, false);
   },
   resetCell: function resetCell() {
@@ -316,10 +319,12 @@ function Cell(id) {
   this.element = document.querySelector("#\\3".concat(this.id));
 
   this.hoverEventHandler = function (event) {
+    event.stopPropagation();
+    event.preventDefault();
     var markToShow;
 
     switch (event.type) {
-      case "mouseover":
+      case "mouseenter":
         markToShow = "outline-".concat(this.marked);
         break;
 
@@ -332,13 +337,18 @@ function Cell(id) {
   };
 
   this.clickEventHandler = function (event) {
-    restartBtn.removeAttribute("disabled");
-    this.showCellMark(turn.currentTurn);
-    this.marked = turn.currentTurn;
-    cellsGrid.clickCentinel(this.marked, this.playerName, this.id);
-    turn.switch();
-    this.removeClickEvent();
-    this.activateHoverEvent();
+    event.stopPropagation();
+    event.preventDefault(); // Using this if-statement to fix the clicking twice bug
+
+    if (!cellsGrid.allCellsId.includes(event.currentTarget.id)) {
+      restartBtn.removeAttribute("disabled");
+      this.showCellMark(turn.currentTurn);
+      this.marked = turn.currentTurn;
+      cellsGrid.clickCentinel(this.marked, this.playerName, this.id);
+      turn.switch();
+      this.activateHoverEvent();
+      this.removeClickEvent();
+    }
   };
 }
 
@@ -376,6 +386,7 @@ var cellsGridPrototype = {
   },
   clickCentinel: function clickCentinel(mark, name, cellId) {
     this.totalClicks++;
+    this.allCellsId.push(cellId);
 
     switch (mark) {
       case "x":
@@ -435,9 +446,11 @@ var cellsGridPrototype = {
             _iterator5.f();
           }
 
+          console.log("finalArray: ".concat(finalArray));
           sum = finalArray.reduce(function (previous, current) {
             return previous + current;
           });
+          console.log("sum: ".concat(sum));
 
           if (sum === 15) {
             this.summary(markToCheck, finalArray);
@@ -478,11 +491,42 @@ var cellsGridPrototype = {
           return x;
         });
         break;
+
+      default:
+        this.tiesScore++;
     }
 
     this.markWinnerCells(this.won.cellsId);
     dialogBox.show();
     this.showDialog();
+    this.manageUpdateScore();
+  },
+  manageUpdateScore: function manageUpdateScore() {
+    var player = this.won.playerName;
+
+    switch (player) {
+      case player1.name:
+        player1.score++;
+        player1.updateScore();
+        break;
+
+      case player2.name:
+        player2.score++;
+        player2.updateScore();
+        break;
+
+      default:
+        console.log("default");
+        var tieScoreSlot = document.querySelector("#start #ties");
+        var scoreString = this.tiesScore.toString();
+
+        if (this.tiesScore < 10) {
+          scoreString = '0' + scoreString;
+        }
+
+        tieScoreSlot.querySelector('.score').textContent = scoreString;
+        break;
+    }
   },
   showDialog: function showDialog() {
     var mark = this.won.mark;
@@ -545,8 +589,12 @@ var cellsGridPrototype = {
     }
 
     this.won.cellsId = [];
+    this.won.playerName = "";
+    this.won.mark = "";
     this.xCells.ids = [];
     this.oCells.ids = [];
+    this.totalClicks = 0;
+    this.allCellsId = [];
   },
   markWinnerCells: function markWinnerCells(cellsIds) {
     var _iterator7 = _createForOfIteratorHelper(cellsIds),
@@ -583,10 +631,12 @@ function CellsGrid() {
   };
   this.cells = [0, 0, 0, 0, 0, 0, 0, 0, 0];
   this.totalClicks = 0;
+  this.tiesScore = 0;
+  this.allCellsId = [];
 }
 
 CellsGrid.prototype = cellsGridPrototype;
-CellsGrid.prototype.constructor = CellsGrid; // dialog
+CellsGrid.prototype.constructor = CellsGrid; // DIALOG
 
 function configurePoppupDialog(kind) {
   switch (kind) {
@@ -700,7 +750,6 @@ function resetDialog() {
 
   ;
   iconContainer.classList.remove('not-show-element');
-  var counterType = counterType < 10 ? ++counterType : counterType;
 } // dialog initializing
 
 
@@ -742,7 +791,9 @@ var mark = new Mark(); // creating player objects
 var player1 = new Player();
 var player2 = new Player(); // creating Turn OBJECT
 
-var turn = new Turn(); //adding event to choose the player1's mark
+var turn = new Turn(); // creating cellsGrid OBJECT to group and manage the cells all
+
+var cellsGrid = new CellsGrid(); //adding event to choose the player1's mark
 
 for (var _i2 = 0, _arr2 = [mark.btnX, mark.btnO]; _i2 < _arr2.length; _i2++) {
   var button = _arr2[_i2];
@@ -753,13 +804,12 @@ for (var _i2 = 0, _arr2 = [mark.btnX, mark.btnO]; _i2 < _arr2.length; _i2++) {
 
 
 var playerVsPlayerButton = document.querySelector('#player1-vs-player2-button');
-var cellsGrid = new CellsGrid();
 playerVsPlayerButton.addEventListener('click', function () {
   // initializing player objects
   player1.mark = mark.p1Mark;
   player1.name = 'P1';
   player2.mark = mark.p2Mark;
-  player2.name = 'CPU';
+  player2.name = 'P2';
   player1.initializeScore();
   player2.initializeScore();
   newGame.classList.add('not-show-element');
@@ -767,21 +817,34 @@ playerVsPlayerButton.addEventListener('click', function () {
   cellsGrid.init();
 }); // dialog events
 
-quitCancelBtn.addEventListener("click", function () {
-  return dialogBox.close();
+quitCancelBtn.addEventListener("click", function (e) {
+  if (e.target.textContent.toLowerCase() === "quit") {
+    // reload the page without creating a history entry
+    window.location.replace(window.location.pathname + window.location.search + window.location.hash);
+  } else {
+    dialogBox.close();
+  }
 });
-dialogBox.addEventListener("close", resetDialog); //reset
+roundRestartBtn.addEventListener("click", function () {
+  restartNewRound();
+  dialogBox.close();
+});
+dialogBox.addEventListener("close", function () {
+  resetDialog();
+}); //reset
 
 var restartBtn = document.getElementById("restart-button");
 
-function restartAllCells() {
+function restartNewRound() {
   cellsGrid.resetGrid();
   turn.reset();
   restartBtn.setAttribute("disabled", "");
-  cellsGrid.totalClicks = 0;
 }
 
-restartBtn.addEventListener("click", restartAllCells);
+restartBtn.addEventListener("click", function () {
+  dialogBox.show();
+  configurePoppupDialog("restart");
+});
 },{}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -810,7 +873,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "57348" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58043" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

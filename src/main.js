@@ -15,7 +15,7 @@ const markPrototype = {
 		this.updateMark();
 	},
 };
-
+// Mark constructor function
 function Mark() {
 	this.p1Mark = 'x';
 	this.p2Mark = 'o';
@@ -44,6 +44,7 @@ const playerPrototype = {
 		this.scoreCell.querySelector( 'p span' )
 			.textContent = this.name;
 	},
+
 	generateClick() {}, //For CPU user
 };
 
@@ -105,13 +106,19 @@ const cellPrototype = {
 		this.element.removeEventListener( "click", this.clickEventHandler, false );
 	},
 	activateHoverEvent() {
-		this.hoverEventHandler = this.hoverEventHandler.bind( this );
-		this.element.addEventListener( "mouseover", this.hoverEventHandler, false );
-		this.element.addEventListener( "mouseleave", this.hoverEventHandler, false );
+		// checking if the device has pointer
+		if ( matchMedia( '(pointer:fine)' )
+			.matches || matchMedia( '(pointer:coarse)' )
+			.matches ) {
+			this.hoverEventHandler = this.hoverEventHandler.bind( this );
+			this.element.addEventListener( "mouseenter", this.hoverEventHandler, false );
+			this.element.addEventListener( "mouseleave", this.hoverEventHandler, false );
+		}
+
 	},
 	deactivateHoverEvent() {
-		// console.log( this.hoverEvent.mouseoverFunction );
-		this.element.removeEventListener( "mouseover", this.hoverEventHandler, false );
+		// console.log( this.hoverEvent.mouseenterFunction );
+		this.element.removeEventListener( "mouseenter", this.hoverEventHandler, false );
 		this.element.removeEventListener( "mouseleave", this.hoverEventHandler, false );
 	},
 	resetCell() {
@@ -155,9 +162,11 @@ function Cell( id ) {
 	// \\3 must precede the id or var if you start it with a number
 	this.element = document.querySelector( `#\\3${this.id}` );
 	this.hoverEventHandler = function ( event ) {
+		event.stopPropagation();
+		event.preventDefault();
 		let markToShow
 		switch ( event.type ) {
-		case "mouseover":
+		case "mouseenter":
 			markToShow = `outline-${this.marked}`
 			break;
 		case "mouseleave":
@@ -167,17 +176,23 @@ function Cell( id ) {
 		this.showCellMark( markToShow );
 	};
 	this.clickEventHandler = function ( event ) {
-		restartBtn.removeAttribute( "disabled" );
-		this.showCellMark( turn.currentTurn );
-		this.marked = turn.currentTurn;
-		cellsGrid.clickCentinel( this.marked, this.playerName, this.id )
-		turn.switch();
-		this.removeClickEvent();
-		this.activateHoverEvent();
+		event.stopPropagation();
+		event.preventDefault();
+		// Using this if-statement to fix the clicking twice bug
+		if ( !cellsGrid.allCellsId.includes( event.currentTarget.id ) ) {
+			restartBtn.removeAttribute( "disabled" );
+			this.showCellMark( turn.currentTurn );
+			this.marked = turn.currentTurn;
+			cellsGrid.clickCentinel( this.marked, this.playerName, this.id )
+			turn.switch();
+			this.activateHoverEvent();
+			this.removeClickEvent();
+		}
 	}
 }
 Cell.prototype = cellPrototype;
 Cell.prototype.constructor = Cell;
+
 // CellsGrid Object
 const cellsGridPrototype = {
 	init() {
@@ -195,6 +210,7 @@ const cellsGridPrototype = {
 	},
 	clickCentinel( mark, name, cellId ) {
 		this.totalClicks++
+		this.allCellsId.push( cellId );
 		switch ( mark ) {
 		case "x":
 			this.xCells.ids.push( Number( cellId ) );
@@ -225,7 +241,9 @@ const cellsGridPrototype = {
 				for ( let value of matrizElem ) {
 					finalArray.push( this[ `${markToCheck}Cells` ].ids[ value ] );
 				}
+				console.log( `finalArray: ${finalArray}` );
 				sum = finalArray.reduce( ( previous, current ) => previous + current );
+				console.log( `sum: ${sum}` );
 				if ( sum === 15 ) {
 					this.summary( markToCheck, finalArray );
 					return;
@@ -253,10 +271,36 @@ const cellsGridPrototype = {
 			this.won.playerName = this.oCells.playerName;
 			this.won.cellsId = winnerCells.map( ( x ) => x );
 			break;
+		default:
+			this.tiesScore++;
 		}
 		this.markWinnerCells( this.won.cellsId );
 		dialogBox.show();
 		this.showDialog();
+		this.manageUpdateScore();
+	},
+	manageUpdateScore() {
+		let player = this.won.playerName;
+		switch ( player ) {
+		case player1.name:
+			player1.score++
+			player1.updateScore();
+			break;
+		case player2.name:
+			player2.score++
+			player2.updateScore();
+			break;
+		default:
+			console.log( "default" );
+			const tieScoreSlot = document.querySelector( "#start #ties" )
+			let scoreString = this.tiesScore.toString();
+			if ( this.tiesScore < 10 ) {
+				scoreString = '0' + scoreString;
+			}
+			tieScoreSlot.querySelector( '.score' )
+				.textContent = scoreString;
+			break;
+		}
 	},
 	showDialog() {
 		let mark = this.won.mark;
@@ -302,8 +346,12 @@ const cellsGridPrototype = {
 			cellElement.resetCell();
 		}
 		this.won.cellsId = [];
+		this.won.playerName = "";
+		this.won.mark = "";
 		this.xCells.ids = [];
 		this.oCells.ids = [];
+		this.totalClicks = 0;
+		this.allCellsId = [];
 	},
 	markWinnerCells( cellsIds ) {
 		for ( cellId of cellsIds ) {
@@ -332,11 +380,13 @@ function CellsGrid() {
 	};
 	this.cells = [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
 	this.totalClicks = 0;
+	this.tiesScore = 0;
+	this.allCellsId = [];
 }
 
 CellsGrid.prototype = cellsGridPrototype;
 CellsGrid.prototype.constructor = CellsGrid;
-// dialog
+// DIALOG
 function configurePoppupDialog( kind ) {
 	switch ( kind ) {
 	case type.first:
@@ -451,7 +501,6 @@ function resetDialog() {
 		entrie.classList.add( 'not-show-element' );
 	};
 	iconContainer.classList.remove( 'not-show-element' );
-	let counterType = counterType < 10 ? ++counterType : counterType
 }
 // dialog initializing
 const dialogBox = document.querySelector( "#dialog-box" );
@@ -495,7 +544,8 @@ const player1 = new Player();
 const player2 = new Player();
 // creating Turn OBJECT
 const turn = new Turn();
-
+// creating cellsGrid OBJECT to group and manage the cells all
+const cellsGrid = new CellsGrid();
 //adding event to choose the player1's mark
 for ( let button of [ mark.btnX, mark.btnO ] ) {
 	button.addEventListener( 'click', () => mark.switch() );
@@ -505,13 +555,13 @@ for ( let button of [ mark.btnX, mark.btnO ] ) {
 const playerVsPlayerButton = document.querySelector(
 	'#player1-vs-player2-button'
 );
-const cellsGrid = new CellsGrid();
+
 playerVsPlayerButton.addEventListener( 'click', function () {
 	// initializing player objects
 	player1.mark = mark.p1Mark;
 	player1.name = 'P1';
 	player2.mark = mark.p2Mark;
-	player2.name = 'CPU';
+	player2.name = 'P2';
 	player1.initializeScore();
 	player2.initializeScore();
 	newGame.classList.add( 'not-show-element' );
@@ -519,15 +569,30 @@ playerVsPlayerButton.addEventListener( 'click', function () {
 	cellsGrid.init();
 } );
 // dialog events
-quitCancelBtn.addEventListener( "click", () => dialogBox.close() );
-dialogBox.addEventListener( "close", resetDialog );
+quitCancelBtn.addEventListener( "click", ( e ) => {
+	if ( e.target.textContent.toLowerCase() === "quit" ) {
+		// reload the page without creating a history entry
+		window.location.replace( window.location.pathname + window.location.search + window.location.hash )
+	} else {
+		dialogBox.close();
+	}
+} );
+roundRestartBtn.addEventListener( "click", () => {
+	restartNewRound();
+	dialogBox.close();
+} )
+dialogBox.addEventListener( "close", () => {
+	resetDialog();
+} );
 //reset
 const restartBtn = document.getElementById( "restart-button" );
 
-function restartAllCells() {
+function restartNewRound() {
 	cellsGrid.resetGrid();
 	turn.reset();
 	restartBtn.setAttribute( "disabled", "" );
-	cellsGrid.totalClicks = 0;
 }
-restartBtn.addEventListener( "click", restartAllCells );
+restartBtn.addEventListener( "click", () => {
+	dialogBox.show();
+	configurePoppupDialog( "restart" )
+} );
