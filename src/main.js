@@ -1,4 +1,6 @@
-// mark OBJECT
+const _ = require( 'lodash' );
+
+// MARK OBJECT
 const markPrototype = {
 	updateMark() {
 		if ( this.btnX.classList.contains( 'active-mark-button' ) ) {
@@ -25,7 +27,8 @@ function Mark() {
 Mark.prototype = markPrototype;
 Mark.prototype.constructor = Mark;
 
-// Player OBJECT
+// ==========================================================================
+// PLAYER OBJECT
 const playerPrototype = {
 	updateScore() {
 		let scoreString = this.score.toString();
@@ -44,8 +47,13 @@ const playerPrototype = {
 		this.scoreCell.querySelector( 'p span' )
 			.textContent = this.name;
 	},
-
-	generateClick() {}, //For CPU user
+	//For CPU user
+	generateClick( id ) {
+		if ( player2.name === "CPU" ) {
+			document.getElementById( `${id}` )
+				.click();
+		}
+	}
 };
 
 function Player() {
@@ -58,7 +66,8 @@ function Player() {
 Player.prototype = playerPrototype;
 Player.prototype.constructor = Player;
 
-// Turn OBJECT
+// ==============================================================================
+// TURN OBJECT
 const turnPrototype = {
 	switch () {
 		let thirdRecipe;
@@ -88,6 +97,8 @@ function Turn() {
 }
 Turn.prototype = turnPrototype;
 Turn.prototype.constructor = Turn;
+
+// ============================================================================
 // CELL OBJECT
 const cellPrototype = {
 	markAsWinner() {
@@ -117,7 +128,6 @@ const cellPrototype = {
 
 	},
 	deactivateHoverEvent() {
-		// console.log( this.hoverEvent.mouseenterFunction );
 		this.element.removeEventListener( "mouseenter", this.hoverEventHandler, false );
 		this.element.removeEventListener( "mouseleave", this.hoverEventHandler, false );
 	},
@@ -184,16 +194,23 @@ function Cell( id ) {
 			this.showCellMark( turn.currentTurn );
 			this.marked = turn.currentTurn;
 			cellsGrid.clickCentinel( this.marked, this.playerName, this.id )
-			turn.switch();
 			this.activateHoverEvent();
 			this.removeClickEvent();
+			computer.anotate();
+			turn.switch();
+		}
+		// managing computer move
+		if ( computer.isItMyTurn() ) {
+			let computerMove = computer.chooseMove();
+			player2.generateClick( computerMove );
 		}
 	}
 }
 Cell.prototype = cellPrototype;
 Cell.prototype.constructor = Cell;
 
-// CellsGrid Object
+// ===========================================================================
+// CELLSGRID OBJECT
 const cellsGridPrototype = {
 	init() {
 		let cellArrayPosition;
@@ -211,6 +228,7 @@ const cellsGridPrototype = {
 	clickCentinel( mark, name, cellId ) {
 		this.totalClicks++
 		this.allCellsId.push( cellId );
+		// update the 'x' clicks counter and 'o' clicks counter
 		switch ( mark ) {
 		case "x":
 			this.xCells.ids.push( Number( cellId ) );
@@ -219,7 +237,9 @@ const cellsGridPrototype = {
 			this.oCells.ids.push( Number( cellId ) );
 			break;
 		}
+		// check if the one clicked already won
 		this.winnerCentinel( mark );
+
 	},
 	winnerCentinel( markToCheck ) {
 		initialArray = this[ `${markToCheck}Cells` ].ids.map( ( x ) => x );
@@ -241,9 +261,7 @@ const cellsGridPrototype = {
 				for ( let value of matrizElem ) {
 					finalArray.push( this[ `${markToCheck}Cells` ].ids[ value ] );
 				}
-				console.log( `finalArray: ${finalArray}` );
 				sum = finalArray.reduce( ( previous, current ) => previous + current );
-				console.log( `sum: ${sum}` );
 				if ( sum === 15 ) {
 					this.summary( markToCheck, finalArray );
 					return;
@@ -275,9 +293,13 @@ const cellsGridPrototype = {
 			this.tiesScore++;
 		}
 		this.markWinnerCells( this.won.cellsId );
+		this.manageUpdateScore();
+		for ( cell of cellsGrid.cells ) {
+			cell.removeClickEvent();
+		}
 		dialogBox.show();
 		this.showDialog();
-		this.manageUpdateScore();
+
 	},
 	manageUpdateScore() {
 		let player = this.won.playerName;
@@ -291,7 +313,6 @@ const cellsGridPrototype = {
 			player2.updateScore();
 			break;
 		default:
-			console.log( "default" );
 			const tieScoreSlot = document.querySelector( "#start #ties" )
 			let scoreString = this.tiesScore.toString();
 			if ( this.tiesScore < 10 ) {
@@ -386,6 +407,140 @@ function CellsGrid() {
 
 CellsGrid.prototype = cellsGridPrototype;
 CellsGrid.prototype.constructor = CellsGrid;
+
+// =====================================================================
+// COMPUTER OBJECT
+computerPrototype = {
+	initialize() {
+		this.combinations = JSON.parse( JSON.stringify( COMBINATIONS_MATRIX ) );
+		this.possiblePlays = JSON.parse( JSON.stringify( POSSIBLE_PLAYS ) );
+		this.computerTrackArray = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
+		this.playerTrackArray = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
+	},
+	// updates the player and computer track arrays and eliminates the current move
+	// from the possible plays array
+	anotate() {
+		// pop out the number clicked from the possible future moves
+		let cellClicked = Number( cellsGrid.allCellsId[ cellsGrid.allCellsId.length - 1 ] );
+		var index = this.possiblePlays.findIndex( ( x ) => x === cellClicked );
+		this.possiblePlays.splice( index, 1 );
+
+		// keeping track of the combinations used for each player
+		if ( !this.isItMyTurn() ) {
+			this.combinations.forEach( ( e, i ) => {
+				if ( e.includes( cellClicked ) ) {
+					this.playerTrackArray[ i ]++;
+				}
+			} );
+		} else {
+			this.combinations.forEach( ( e, i ) => {
+				if ( e.includes( cellClicked ) ) {
+					this.computerTrackArray[ i ]++;
+				}
+			} );
+		}
+	},
+	// Analize the options and return the chosen move
+	chooseMove() {
+		var iHaveWinningMove = this.haveIWinningMove();
+		var playerHaveWinningMove = this.havePWinningMove();
+		var playerHaveHalfEmptyCombs = this.havePHalfEmptyCombs();
+		var playerHaveEmptyCombs = this.havePEmptyCombs();
+
+		if ( iHaveWinningMove || iHaveWinningMove === 0 ) {
+
+			for ( let element of this.possiblePlays ) {
+				if ( this.combinations[ iHaveWinningMove ].includes( element ) ) {
+					return element;
+				}
+			}
+
+		} else if ( playerHaveWinningMove || playerHaveWinningMove === 0 ) {
+
+			for ( let element of this.possiblePlays ) {
+				if ( this.combinations[ playerHaveWinningMove ].includes( element ) ) {
+					return element;
+				}
+			}
+
+		} else if ( playerHaveHalfEmptyCombs || playerHaveEmptyCombs === 0 ) {
+
+			for ( let element of this.possiblePlays ) {
+				if ( this.combinations[ playerHaveHalfEmptyCombs ].includes( element ) ) {
+					return element;
+				}
+			}
+
+		} else if ( playerHaveEmptyCombs || playerHaveEmptyCombs === 0 ) {
+
+			for ( let element of this.possiblePlays ) {
+				if ( this.combinations[ playerHaveEmptyCombs ].includes( element ) ) {
+					return element;
+				}
+			}
+
+		} else {
+			return computer.takeFirstOpt();
+		}
+	},
+	// small tasks
+	isItMyTurn() {
+		if ( turn.currentTurn === player2.mark ) {
+			return true;
+		}
+		return false;
+	},
+	haveIWinningMove() {
+		var indexToReturn = null;
+		this.computerTrackArray.forEach( ( element, index ) => {
+			if ( element === 2 && this.playerTrackArray[ index ] == 0 ) {
+				indexToReturn = index;
+			}
+		} );
+		return indexToReturn;
+	},
+	havePWinningMove() {
+		var indexToReturn = null;
+		this.playerTrackArray.forEach( ( element, index ) => {
+			if ( element === 2 && this.computerTrackArray[ index ] === 0 ) {
+				indexToReturn = index;
+			}
+		} );
+		return indexToReturn;
+	},
+	havePEmptyCombs() {
+		var indexToReturn = null;
+		this.playerTrackArray.forEach( ( element, index ) => {
+			if ( element === 0 && this.computerTrackArray[ index ] === 0 ) {
+				indexToReturn = index;
+			}
+		} );
+		return indexToReturn;
+	},
+	havePHalfEmptyCombs() {
+		var indexToReturn = null;
+		this.playerTrackArray.forEach( ( element, index ) => {
+			if ( element === 0 && this.computerTrackArray[ index ] === 1 ) {
+				indexToReturn = index;
+			}
+		} );
+		return indexToReturn;
+	},
+	takeFirstOpt() {
+		return this.possiblePlays[ 0 ];
+	}
+};
+
+function Computer() {
+	this.combinations = [];
+	this.possiblePlays = [];
+	this.computerTrackArray = [];
+	this.playerTrackArray = [];
+}
+
+Computer.prototype = computerPrototype;
+Computer.prototype.constructor = Computer;
+// ==========================================================================
 // DIALOG
 function configurePoppupDialog( kind ) {
 	switch ( kind ) {
@@ -437,9 +592,7 @@ function configurePoppupDialog( kind ) {
 			.getAttribute( "fill" );
 		break;
 	case type.sixth:
-		console.log( won );
 		won.classList.remove( 'not-show-element' );
-		console.log( won );
 		iconO.classList.remove( 'not-show-element' );
 		takesRound.classList.remove( 'not-show-element' );
 		takesRound.style.color =
@@ -533,10 +686,13 @@ const type = {
 	nineth: 'restart',
 	tenth: 'tied',
 };
+
+// ==========================================================================
 // Initialize
 // pages
 const newGame = document.querySelector( '#new-game' );
 const start = document.querySelector( '#start' );
+console.log( start.outerHTML );
 // creating mark object
 const mark = new Mark();
 // creating player objects
@@ -551,10 +707,27 @@ for ( let button of [ mark.btnX, mark.btnO ] ) {
 	button.addEventListener( 'click', () => mark.switch() );
 }
 
+// Computer constants
+const COMBINATIONS_MATRIX = [
+	[ 1, 5, 9 ],
+	[ 1, 6, 8 ],
+	[ 2, 4, 9 ],
+	[ 2, 5, 8 ],
+	[ 2, 6, 7 ],
+	[ 3, 4, 8 ],
+	[ 3, 5, 7 ],
+	[ 4, 5, 6 ]
+];
+const POSSIBLE_PLAYS = [ 5, 2, 4, 6, 8, 1, 3, 7, 9 ];
+
 // player vs player addEventListener
 const playerVsPlayerButton = document.querySelector(
 	'#player1-vs-player2-button'
 );
+
+const cpuVsPlayerButton = document.querySelector( "#cpu-vs-player-button" );
+
+const computer = new Computer();
 
 playerVsPlayerButton.addEventListener( 'click', function () {
 	// initializing player objects
@@ -568,31 +741,57 @@ playerVsPlayerButton.addEventListener( 'click', function () {
 	start.classList.remove( 'not-show-element' );
 	cellsGrid.init();
 } );
+cpuVsPlayerButton.addEventListener( "click", function () {
+	player1.mark = mark.p1Mark;
+	player1.name = "P1";
+	player2.mark = mark.p2Mark;
+	player2.name = "CPU";
+	player1.initializeScore();
+	player2.initializeScore();
+	newGame.classList.add( 'not-show-element' );
+	start.classList.remove( 'not-show-element' );
+	cellsGrid.init();
+	computer.initialize();
+	if ( player2.mark === "x" ) {
+		let computerMove = computer.chooseMove();
+		player2.generateClick( computerMove );
+	}
+} );
 // dialog events
 quitCancelBtn.addEventListener( "click", ( e ) => {
 	if ( e.target.textContent.toLowerCase() === "quit" ) {
 		// reload the page without creating a history entry
-		window.location.replace( window.location.pathname + window.location.search + window.location.hash )
+		window.location.reload();
 	} else {
+		resetDialog();
 		dialogBox.close();
 	}
 } );
 roundRestartBtn.addEventListener( "click", () => {
 	restartNewRound();
+	resetDialog();
 	dialogBox.close();
 } )
-dialogBox.addEventListener( "close", () => {
-	resetDialog();
-} );
-//reset
 const restartBtn = document.getElementById( "restart-button" );
 
 function restartNewRound() {
 	cellsGrid.resetGrid();
 	turn.reset();
+	if ( computer ) {
+		computer.initialize();
+	}
 	restartBtn.setAttribute( "disabled", "" );
+	if ( player2.mark === "x" ) {
+		let computerMove = computer.chooseMove();
+		player2.generateClick( computerMove );
+	}
 }
 restartBtn.addEventListener( "click", () => {
-	dialogBox.show();
 	configurePoppupDialog( "restart" )
+	dialogBox.show();
+
 } );
+
+// =======================================================================
+// WEB STORAGE
+// =======================================================================
