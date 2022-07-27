@@ -213,6 +213,63 @@ html {
   opacity: 0.3;
 }
 
+/* cell marks */
+.cell-background-x {
+  background-image: url("assets/icon-x.svg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 40px;
+}
+
+.cell-background-x:hover {
+  background-image: url("assets/icon-x-outline.svg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 40px;
+}
+
+.cell-background-win-x {
+  background-image: url("assets/icon-x-outline.svg");
+  background-color: var(--light-blue) !important;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 44px;
+}
+
+.cell-background-o {
+  background-image: url("assets/icon-o.svg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 40px;
+}
+
+.cell-background-o:hover {
+  background-image: url("assets/icon-o-outline.svg");
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 40px;
+}
+
+.cell-background-win-o {
+  background-image: url("assets/icon-o-outline.svg");
+  background-color: var(--light-yellow) !important;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 44px;
+}
+
+.msg-background-x {
+  background-image: url("assets/icon-x.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
+.msg-background-o {
+  background-image: url("assets/icon-o.svg");
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+
 /* ||SITEWIDE */
 body {
   display: flex;
@@ -227,7 +284,13 @@ body {
 
 /* new game section */
 #new-game header {
+  width: 71.97px;
+  height: 32px;
+  margin: 0 auto;
   margin-bottom: 32px;
+  background: url(assets/logo.svg);
+  background-repeat: no-repeat;
+  background-position: center;
 }
 
 #player-choice {
@@ -280,9 +343,12 @@ body {
 }
 
 #start header .logo-wrapper {
+  width: 71.97px;
+  height: 32px;
+  background: url("assets/logo.svg");
+  background-repeat: no-repeat;
   display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  align-self: center;
 }
 
 #start header .turn {
@@ -330,15 +396,10 @@ body {
 #cells>div {
   border-radius: 10px;
   box-shadow: inset 0px -8px 0px var(--dark-shadow);
-  background: var(--semi-dark-navy);
+  background-color: var(--semi-dark-navy);
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-#cells div>div {
-  position: relative;
-  width: 40px;
 }
 
 #start footer {
@@ -369,10 +430,9 @@ body {
   border: none;
 }
 
-#dialog-box:not([open]) {
+/* #dialog-box:not([open]) {
   display: none;
-}
-
+} */
 #msg {
   height: 228px;
   display: flex;
@@ -391,7 +451,8 @@ body {
 }
 
 #msg-body .icon-container {
-  width: 30px;
+  width: 28px;
+  height: 28px;
   margin-right: 8px;
 }
 
@@ -444,6 +505,31 @@ body {
     height: 52px;
     width: 52px;
     border-radius: 10px;
+  }
+
+  /* cell marks */
+  .cell-background-x {
+    background-size: 63.46px;
+  }
+
+  .cell-background-x:hover {
+    background-size: 63.46px;
+  }
+
+  .cell-background-win-x {
+    background-size: 67.46px;
+  }
+
+  .cell-background-o {
+    background-size: 63.46px;
+  }
+
+  .cell-background-o:hover {
+    background-size: 63.46px;
+  }
+
+  .cell-background-win-o {
+    background-size: 67.46px;
   }
 
   /* ||SITEWIDE */
@@ -510,6 +596,7 @@ body {
 
   #msg-body .icon-container {
     width: 64px;
+    height: 64px;
     margin-right: 24px;
   }
 

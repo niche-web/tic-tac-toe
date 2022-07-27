@@ -1,5 +1,3 @@
-const _ = require( 'lodash' );
-
 // MARK OBJECT
 const markPrototype = {
 	updateMark() {
@@ -204,6 +202,7 @@ function Cell( id ) {
 			let computerMove = computer.chooseMove();
 			player2.generateClick( computerMove );
 		}
+		localStorage.setItem( "pageSave", inBody );
 	}
 }
 Cell.prototype = cellPrototype;
@@ -646,6 +645,7 @@ function configurePoppupDialog( kind ) {
 		roundRestartBtn.querySelector( 'h5' )
 			.textContent = 'next round';
 	};
+	localStorage.setItem( "pageSave", inBody );
 }
 
 function resetDialog() {
@@ -689,10 +689,11 @@ const type = {
 
 // ==========================================================================
 // Initialize
+let inBody = document.querySelector( "body" )
+	.innerHTML;
 // pages
 const newGame = document.querySelector( '#new-game' );
 const start = document.querySelector( '#start' );
-console.log( start.outerHTML );
 // creating mark object
 const mark = new Mark();
 // creating player objects
@@ -704,7 +705,11 @@ const turn = new Turn();
 const cellsGrid = new CellsGrid();
 //adding event to choose the player1's mark
 for ( let button of [ mark.btnX, mark.btnO ] ) {
-	button.addEventListener( 'click', () => mark.switch() );
+	button.addEventListener( 'click', () => {
+		console.log( "change" );
+		mark.switch();
+		localStorage.setItem( "pageSave", inBody )
+	} );
 }
 
 // Computer constants
@@ -740,6 +745,7 @@ playerVsPlayerButton.addEventListener( 'click', function () {
 	newGame.classList.add( 'not-show-element' );
 	start.classList.remove( 'not-show-element' );
 	cellsGrid.init();
+	localStorage.setItem( "pageSave", inBody );
 } );
 cpuVsPlayerButton.addEventListener( "click", function () {
 	player1.mark = mark.p1Mark;
@@ -756,6 +762,7 @@ cpuVsPlayerButton.addEventListener( "click", function () {
 		let computerMove = computer.chooseMove();
 		player2.generateClick( computerMove );
 	}
+	localStorage.setItem( "pageSave", inBody );
 } );
 // dialog events
 quitCancelBtn.addEventListener( "click", ( e ) => {
@@ -765,12 +772,14 @@ quitCancelBtn.addEventListener( "click", ( e ) => {
 	} else {
 		resetDialog();
 		dialogBox.close();
+		localStorage.setItem( "pageSave", inBody );
 	}
 } );
 roundRestartBtn.addEventListener( "click", () => {
 	restartNewRound();
 	resetDialog();
 	dialogBox.close();
+	localStorage.setItem( "pageSave", inBody );
 } )
 const restartBtn = document.getElementById( "restart-button" );
 
@@ -789,9 +798,27 @@ function restartNewRound() {
 restartBtn.addEventListener( "click", () => {
 	configurePoppupDialog( "restart" )
 	dialogBox.show();
-
+	localStorage.setItem( "pageSave", inBody );
 } );
 
 // =======================================================================
-// WEB STORAGE
+// -------------------------WEB STORAGE-----------------------------------
 // =======================================================================
+window.onload = function () {
+	if ( localStorage.getItem( "pageSave" ) ) {
+		inBody = localStorage.getItem( "pageSave" )
+		console.log( document.querySelector( "body" )
+			.innerHTML );
+		// make the browser to render the DOM
+		var el = document.getElementById( "fixup" );
+		var speed = 10,
+			i = 0,
+			limit = 1000;
+		setTimeout( function loop() {
+			el.innerHTML = i++;
+			if ( i <= limit ) {
+				setTimeout( loop, speed );
+			}
+		}, speed );
+	}
+}
