@@ -430,9 +430,10 @@ body {
   border: none;
 }
 
-/* #dialog-box:not([open]) {
+#dialog-box:not([open]) {
   display: none;
-} */
+}
+
 #msg {
   height: 228px;
   display: flex;

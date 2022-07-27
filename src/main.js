@@ -51,6 +51,9 @@ const playerPrototype = {
 			document.getElementById( `${id}` )
 				.click();
 		}
+	},
+	reset() {
+		this.track = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
 	}
 };
 
@@ -59,6 +62,7 @@ function Player() {
 	this.name = '';
 	this.score = 0;
 	this.scoreCell = {};
+	this.track = [ 0, 0, 0, 0, 0, 0, 0, 0 ]
 }
 
 Player.prototype = playerPrototype;
@@ -100,11 +104,7 @@ Turn.prototype.constructor = Turn;
 // CELL OBJECT
 const cellPrototype = {
 	markAsWinner() {
-		let shownIcon = this.element.querySelector( `.icon-${this.marked}` );
-		this.element.style.backgroundColor = shownIcon.querySelector( "path" )
-			.getAttribute( "fill" );
-		shownIcon.querySelector( "path" )
-			.setAttribute( "fill", "rgba(31, 54, 65)" );
+		this.element.classList.add( `cell-background-win-${this.marked}` )
 	},
 
 	addClickEvent() {
@@ -114,95 +114,46 @@ const cellPrototype = {
 	removeClickEvent() {
 		this.element.removeEventListener( "click", this.clickEventHandler, false );
 	},
-	activateHoverEvent() {
-		// checking if the device has pointer
-		if ( matchMedia( '(pointer:fine)' )
-			.matches || matchMedia( '(pointer:coarse)' )
-			.matches ) {
-			this.hoverEventHandler = this.hoverEventHandler.bind( this );
-			this.element.addEventListener( "mouseenter", this.hoverEventHandler, false );
-			this.element.addEventListener( "mouseleave", this.hoverEventHandler, false );
-		}
-
-	},
-	deactivateHoverEvent() {
-		this.element.removeEventListener( "mouseenter", this.hoverEventHandler, false );
-		this.element.removeEventListener( "mouseleave", this.hoverEventHandler, false );
-	},
 	resetCell() {
-		this.deactivateHoverEvent();
-		this.showCellMark();
 		this.addClickEvent();
-		this.resetCellBackgroundAndSvgsFill();
-
+		this.resetCellBackground();
+		this.marked = "";
 	},
-	resetCellBackgroundAndSvgsFill() {
-		let listOfIcons = this.element.querySelectorAll( "svg" );
-		for ( [ key, value ] of listOfIcons.entries() ) {
-			if ( value.classList.contains( "icon-x" ) ) {
-				value.querySelector( "path" )
-					.setAttribute( "fill", "#31C3BD" );
-			} else if ( value.classList.contains( "icon-o" ) ) {
-				value.querySelector( "path" )
-					.setAttribute( "fill", "#F2B137" );
-			}
-		}
-		this.element.removeAttribute( "style" );
+	resetCellBackground() {
+		this.element.removeAttribute( "class" );
 	},
 	showCellMark( mark ) {
-		// reset: hiding all icons in this cell
-		let listOfIcons = this.element.querySelectorAll( "svg" );
-		for ( [ key, value ] of listOfIcons.entries() ) {
-			value.classList.add( "not-show-element" );
-		}
-		if ( mark ) {
-			//making visible only the correspondent icon
-			let icon = event.currentTarget.querySelector( `.icon-${mark}` );
-			icon.classList.remove( "not-show-element" )
-		}
+		this.element.classList.add( `cell-background-${this.marked}` );
 
 	},
 };
 
-function Cell( id ) {
+function Cell( id, element ) {
 	this.marked = "";
 	this.id = id;
-	// \\3 must precede the id or var if you start it with a number
-	this.element = document.querySelector( `#\\3${this.id}` );
-	this.hoverEventHandler = function ( event ) {
-		event.stopPropagation();
-		event.preventDefault();
-		let markToShow
-		switch ( event.type ) {
-		case "mouseenter":
-			markToShow = `outline-${this.marked}`
-			break;
-		case "mouseleave":
-			markToShow = this.marked;
-			break;
-		}
-		this.showCellMark( markToShow );
-	};
+	this.element = element;
 	this.clickEventHandler = function ( event ) {
 		event.stopPropagation();
 		event.preventDefault();
 		// Using this if-statement to fix the clicking twice bug
 		if ( !cellsGrid.allCellsId.includes( event.currentTarget.id ) ) {
-			restartBtn.removeAttribute( "disabled" );
-			this.showCellMark( turn.currentTurn );
 			this.marked = turn.currentTurn;
-			cellsGrid.clickCentinel( this.marked, this.playerName, this.id )
-			this.activateHoverEvent();
+			restartBtn.removeAttribute( "disabled" );
+			this.showCellMark();
+			cellsGrid.clickCentinel( this.marked, this.playerName, Number( this.id ) )
 			this.removeClickEvent();
-			computer.anotate();
+			if ( player2.name === "CPU" ) {
+				computer.anotate();
+			}
 			turn.switch();
 		}
 		// managing computer move
-		if ( computer.isItMyTurn() ) {
-			let computerMove = computer.chooseMove();
-			player2.generateClick( computerMove );
+		if ( player2.name === "CPU" ) {
+			if ( computer.isItMyTurn() ) {
+				let computerMove = computer.chooseMove();
+				player2.generateClick( computerMove );
+			}
 		}
-		localStorage.setItem( "pageSave", inBody );
 	}
 }
 Cell.prototype = cellPrototype;
@@ -215,103 +166,82 @@ const cellsGridPrototype = {
 		let cellArrayPosition;
 		const cellElements = document.querySelectorAll( "#start #cells > div" );
 		for ( [ key, cellElement ] of cellElements.entries() ) {
-			const cell = new Cell( cellElement.id );
-			cell.element = cellElement;
+			const cell = new Cell( cellElement.id, cellElement );
 			cell.addClickEvent();
 			cellArrayPosition = Number( cellElement.id ) - 1;
 			this.cells.splice( cellArrayPosition, 1, cell );
 		}
-		this.xCells.playerName = player1.mark === "x" ? player1.name : player2.name;
-		this.oCells.playerName = player1.mark === "o" ? player1.name : player2.name;
 	},
 	clickCentinel( mark, name, cellId ) {
 		this.totalClicks++
 		this.allCellsId.push( cellId );
-		// update the 'x' clicks counter and 'o' clicks counter
-		switch ( mark ) {
-		case "x":
-			this.xCells.ids.push( Number( cellId ) );
-			break;
-		case "o":
-			this.oCells.ids.push( Number( cellId ) );
-			break;
-		}
-		// check if the one clicked already won
-		this.winnerCentinel( mark );
 
+		// update players track arrays
+		if ( mark === player1.mark ) {
+			this.combinations.forEach( ( e, i ) => {
+				if ( e.includes( cellId ) ) {
+					player1.track[ i ]++;
+				}
+			} );
+		} else if ( mark === player2.mark ) {
+			this.combinations.forEach( ( e, i ) => {
+				if ( e.includes( cellId ) ) {
+					player2.track[ i ]++;
+				}
+			} );
+		}
+		this.tiesTrack = () => {
+			let result = [];
+			for ( let i = 0; i < 8; i++ ) {
+				result.push( player1.track[ i ] * player2.track[ i ] )
+			}
+			return result;
+		}
+		this.winnerCentinel();
 	},
-	winnerCentinel( markToCheck ) {
-		initialArray = this[ `${markToCheck}Cells` ].ids.map( ( x ) => x );
-		let finalArray = [];
-		let length = initialArray.length;
-		let sum = initialArray.reduce( ( previous, current ) => previous + current );
-		if ( ( length === 3 ) && ( sum === 15 ) ) {
-			finalArray = initialArray.map( x => x );
-			this.summary( markToCheck, finalArray );
+	winnerCentinel() {
+		let player1TrackIndex = player1.track.includes( 3 ) ? player1.track.findIndex( ( x ) => x === 3 ) : false;
+		let player2TrackIndex = player2.track.includes( 3 ) ? player2.track.findIndex( ( x ) => x === 3 ) : false;
+		let tiedGame = !this.tiesTrack()
+			.includes( 0 );
+		if ( player1TrackIndex ) {
+			this.won.playerName = player1.name;
+			this.won.mark = player1.mark;
+			this.won.cellsId = this.combinations[ player1TrackIndex ];
+			player1.score++;
+			this.summary( this.won )
+			return;
+		} else if ( player2TrackIndex ) {
+			this.won.playerName = player2.name;
+			this.won.mark = player2.mark;
+			this.won.cellsId = this.combinations[ player2TrackIndex ];
+			player2.score++;
+			this.summary( this.won );
+			return;
+		} else if ( tiedGame ) {
+			this.tiesScore++
+			this.won.playerName = "none";
+			this.summary( this.won );
 			return;
 		}
-		if ( length > 3 ) {
-			if ( length === 4 ) {
-				var matriz = [ [ 0, 1, 3 ], [ 0, 2, 3 ], [ 1, 2, 3 ] ];
-			} else {
-				matriz = [ [ 0, 1, 4 ], [ 0, 2, 4 ], [ 0, 3, 4 ], [ 1, 2, 4 ], [ 1, 3, 4 ], [ 2, 3, 4 ] ];
-			}
-			for ( let matrizElem of matriz ) {
-				for ( let value of matrizElem ) {
-					finalArray.push( this[ `${markToCheck}Cells` ].ids[ value ] );
-				}
-				sum = finalArray.reduce( ( previous, current ) => previous + current );
-				if ( sum === 15 ) {
-					this.summary( markToCheck, finalArray );
-					return;
-				} else {
-					finalArray = [];
-
-				}
-			}
-			if ( this.totalClicks === 9 ) {
-				this.summary();
-				return;
-			}
-
-		}
 	},
-	summary( markWon = "", winnerCells = [] ) {
-		switch ( markWon ) {
-		case "x":
-			this.won.mark = "x";
-			this.won.playerName = this.xCells.playerName;
-			this.won.cellsId = winnerCells.map( ( x ) => x );
-			break;
-		case "o":
-			this.won.mark = "o";
-			this.won.playerName = this.oCells.playerName;
-			this.won.cellsId = winnerCells.map( ( x ) => x );
-			break;
-		default:
-			this.tiesScore++;
-		}
+	summary( winnerData ) {
 		this.markWinnerCells( this.won.cellsId );
-		this.manageUpdateScore();
-		for ( cell of cellsGrid.cells ) {
-			cell.removeClickEvent();
-		}
+		this.UpdateScore();
+		this.removeCellsClick();
 		dialogBox.show();
 		this.showDialog();
-
 	},
-	manageUpdateScore() {
+	UpdateScore() {
 		let player = this.won.playerName;
 		switch ( player ) {
 		case player1.name:
-			player1.score++
 			player1.updateScore();
 			break;
 		case player2.name:
-			player2.score++
 			player2.updateScore();
 			break;
-		default:
+		case "none":
 			const tieScoreSlot = document.querySelector( "#start #ties" )
 			let scoreString = this.tiesScore.toString();
 			if ( this.tiesScore < 10 ) {
@@ -325,7 +255,7 @@ const cellsGridPrototype = {
 	showDialog() {
 		let mark = this.won.mark;
 		let player = this.won.playerName;
-		if ( mark === "" ) {
+		if ( player === "none" ) {
 			configurePoppupDialog( "tied" );
 		}
 		switch ( player ) {
@@ -368,31 +298,28 @@ const cellsGridPrototype = {
 		this.won.cellsId = [];
 		this.won.playerName = "";
 		this.won.mark = "";
-		this.xCells.ids = [];
-		this.oCells.ids = [];
 		this.totalClicks = 0;
 		this.allCellsId = [];
+		this.tiesTrack = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
 	},
 	markWinnerCells( cellsIds ) {
 		for ( cellId of cellsIds ) {
 			let pos = cellId - 1;
 			this.cells[ pos ].markAsWinner();
 		}
-
 	},
 
-	deactivateCellsClick() {}
+	removeCellsClick() {
+		for ( cell of cellsGrid.cells ) {
+			cell.removeClickEvent();
+		}
+	},
+	updateRecord() {
+
+	}
 };
 
 function CellsGrid() {
-	this.xCells = {
-		playerName: "",
-		ids: []
-	};
-	this.oCells = {
-		playerName: "",
-		ids: []
-	};
 	this.won = {
 		playerName: "",
 		cellsId: [],
@@ -402,6 +329,17 @@ function CellsGrid() {
 	this.totalClicks = 0;
 	this.tiesScore = 0;
 	this.allCellsId = [];
+	this.combinations = [
+		[ 1, 5, 9 ],
+		[ 1, 6, 8 ],
+		[ 2, 4, 9 ],
+		[ 2, 5, 8 ],
+		[ 2, 6, 7 ],
+		[ 3, 4, 8 ],
+		[ 3, 5, 7 ],
+		[ 4, 5, 6 ]
+	];
+	this.tiesTrack = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
 }
 
 CellsGrid.prototype = cellsGridPrototype;
@@ -411,33 +349,28 @@ CellsGrid.prototype.constructor = CellsGrid;
 // COMPUTER OBJECT
 computerPrototype = {
 	initialize() {
-		this.combinations = JSON.parse( JSON.stringify( COMBINATIONS_MATRIX ) );
 		this.possiblePlays = JSON.parse( JSON.stringify( POSSIBLE_PLAYS ) );
-		this.computerTrackArray = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
-		this.playerTrackArray = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
 	},
-	// updates the player and computer track arrays and eliminates the current move
-	// from the possible plays array
 	anotate() {
 		// pop out the number clicked from the possible future moves
 		let cellClicked = Number( cellsGrid.allCellsId[ cellsGrid.allCellsId.length - 1 ] );
 		var index = this.possiblePlays.findIndex( ( x ) => x === cellClicked );
 		this.possiblePlays.splice( index, 1 );
 
-		// keeping track of the combinations used for each player
-		if ( !this.isItMyTurn() ) {
-			this.combinations.forEach( ( e, i ) => {
-				if ( e.includes( cellClicked ) ) {
-					this.playerTrackArray[ i ]++;
-				}
-			} );
-		} else {
-			this.combinations.forEach( ( e, i ) => {
-				if ( e.includes( cellClicked ) ) {
-					this.computerTrackArray[ i ]++;
-				}
-			} );
-		}
+		// // keeping track of the combinations used for each player
+		// if ( !this.isItMyTurn() ) {
+		// 	this.combinations.forEach( ( e, i ) => {
+		// 		if ( e.includes( cellClicked ) ) {
+		// 			this.playerTrackArray[ i ]++;
+		// 		}
+		// 	} );
+		// } else {
+		// 	this.combinations.forEach( ( e, i ) => {
+		// 		if ( e.includes( cellClicked ) ) {
+		// 			this.computerTrackArray[ i ]++;
+		// 		}
+		// 	} );
+		// }
 	},
 	// Analize the options and return the chosen move
 	chooseMove() {
@@ -449,7 +382,7 @@ computerPrototype = {
 		if ( iHaveWinningMove || iHaveWinningMove === 0 ) {
 
 			for ( let element of this.possiblePlays ) {
-				if ( this.combinations[ iHaveWinningMove ].includes( element ) ) {
+				if ( cellsGrid.combinations[ iHaveWinningMove ].includes( element ) ) {
 					return element;
 				}
 			}
@@ -457,7 +390,7 @@ computerPrototype = {
 		} else if ( playerHaveWinningMove || playerHaveWinningMove === 0 ) {
 
 			for ( let element of this.possiblePlays ) {
-				if ( this.combinations[ playerHaveWinningMove ].includes( element ) ) {
+				if ( cellsGrid.combinations[ playerHaveWinningMove ].includes( element ) ) {
 					return element;
 				}
 			}
@@ -465,7 +398,7 @@ computerPrototype = {
 		} else if ( playerHaveHalfEmptyCombs || playerHaveEmptyCombs === 0 ) {
 
 			for ( let element of this.possiblePlays ) {
-				if ( this.combinations[ playerHaveHalfEmptyCombs ].includes( element ) ) {
+				if ( cellsGrid.combinations[ playerHaveHalfEmptyCombs ].includes( element ) ) {
 					return element;
 				}
 			}
@@ -473,7 +406,7 @@ computerPrototype = {
 		} else if ( playerHaveEmptyCombs || playerHaveEmptyCombs === 0 ) {
 
 			for ( let element of this.possiblePlays ) {
-				if ( this.combinations[ playerHaveEmptyCombs ].includes( element ) ) {
+				if ( cellsGrid.combinations[ playerHaveEmptyCombs ].includes( element ) ) {
 					return element;
 				}
 			}
@@ -491,8 +424,8 @@ computerPrototype = {
 	},
 	haveIWinningMove() {
 		var indexToReturn = null;
-		this.computerTrackArray.forEach( ( element, index ) => {
-			if ( element === 2 && this.playerTrackArray[ index ] == 0 ) {
+		player2.track.forEach( ( element, index ) => {
+			if ( element === 2 && player1.track[ index ] == 0 ) {
 				indexToReturn = index;
 			}
 		} );
@@ -500,8 +433,8 @@ computerPrototype = {
 	},
 	havePWinningMove() {
 		var indexToReturn = null;
-		this.playerTrackArray.forEach( ( element, index ) => {
-			if ( element === 2 && this.computerTrackArray[ index ] === 0 ) {
+		player1.track.forEach( ( element, index ) => {
+			if ( element === 2 && player2.track[ index ] === 0 ) {
 				indexToReturn = index;
 			}
 		} );
@@ -509,8 +442,8 @@ computerPrototype = {
 	},
 	havePEmptyCombs() {
 		var indexToReturn = null;
-		this.playerTrackArray.forEach( ( element, index ) => {
-			if ( element === 0 && this.computerTrackArray[ index ] === 0 ) {
+		player1.track.forEach( ( element, index ) => {
+			if ( element === 0 && player2.track[ index ] === 0 ) {
 				indexToReturn = index;
 			}
 		} );
@@ -518,8 +451,8 @@ computerPrototype = {
 	},
 	havePHalfEmptyCombs() {
 		var indexToReturn = null;
-		this.playerTrackArray.forEach( ( element, index ) => {
-			if ( element === 0 && this.computerTrackArray[ index ] === 1 ) {
+		player1.track.forEach( ( element, index ) => {
+			if ( element === 0 && player2.track[ index ] === 1 ) {
 				indexToReturn = index;
 			}
 		} );
@@ -531,10 +464,7 @@ computerPrototype = {
 };
 
 function Computer() {
-	this.combinations = [];
 	this.possiblePlays = [];
-	this.computerTrackArray = [];
-	this.playerTrackArray = [];
 }
 
 Computer.prototype = computerPrototype;
@@ -547,72 +477,58 @@ function configurePoppupDialog( kind ) {
 		playerWonLost.classList.remove( 'not-show-element' );
 		playerWonLost.querySelector( '.player-number' )
 			.textContent = "1";
-		iconX.classList.remove( 'not-show-element' );
+		iconContainer.classList.add( "msg-background-x" )
 		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color = iconX.querySelector( 'path' )
-			.getAttribute( "fill" );
+		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
 		break;
 	case type.second:
 		playerWonLost.classList.remove( 'not-show-element' );
 		playerWonLost.querySelector( '.player-number' )
 			.textContent = "1";
-		iconO.classList.remove( 'not-show-element' );
+		iconContainer.classList.add( 'msg-background-o' );
 		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color =
-			iconO.querySelector( 'path' )
-			.getAttribute( "fill" );
+		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
 		break;
+		ye
 	case type.third:
 		playerWonLost.classList.remove( 'not-show-element' );
 		playerWonLost.querySelector( '.player-number' )
 			.textContent = "2";
-		iconX.classList.remove( 'not-show-element' );
+		iconContainer.classList.add( "msg-background-x" )
 		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color =
-			iconX.querySelector( 'path' )
-			.getAttribute( "fill" );
+		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
 		break;
 	case type.fourth:
 		playerWonLost.classList.remove( 'not-show-element' );
 		playerWonLost.querySelector( '.player-number' )
 			.textContent = "2";
-		iconO.classList.remove( 'not-show-element' );
+		iconContainer.classList.add( 'msg-background-o' );
 		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color =
-			iconO.querySelector( 'path' )
-			.getAttribute( "fill" );
+		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
 		break;
 	case type.fifth:
 		won.classList.remove( 'not-show-element' );
-		iconX.classList.remove( 'not-show-element' );
+		iconContainer.classList.add( 'msg-background-x' );
 		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color =
-			iconX.querySelector( 'path' )
-			.getAttribute( "fill" );
+		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
 		break;
 	case type.sixth:
 		won.classList.remove( 'not-show-element' );
-		iconO.classList.remove( 'not-show-element' );
+		iconContainer.classList.add( 'msg-background-o' );
 		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color =
-			iconO.querySelector( 'path' )
-			.getAttribute( "fill" );
+		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
 		break;
 	case type.seventh:
 		lost.classList.remove( 'not-show-element' );
-		iconX.classList.remove( 'not-show-element' );
+		iconContainer.classList.add( 'msg-background-x' );
 		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color =
-			iconX.querySelector( 'path' )
-			.getAttribute( "fill" );
+		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
 		break;
 	case type.eighth:
 		lost.classList.remove( 'not-show-element' );
-		iconO.classList.remove( 'not-show-element' );
+		iconContainer.classList.add( 'msg-background-o' );
 		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color =
-			iconO.querySelector( 'path' )
-			.getAttribute( "fill" );
+		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
 		break;
 	case type.nineth:
 		iconContainer.classList.add( 'not-show-element' );
@@ -663,8 +579,6 @@ const won = document.querySelector( '#dialog-box #won' );
 const lost = document.querySelector( '#dialog-box #lost' );
 // main take a round
 const iconContainer = document.querySelector( "#msg-body .icon-container" );
-const iconX = document.querySelector( '#dialog-box #icon-x' );
-const iconO = document.querySelector( '#dialog-box #icon-o' );
 const takesRound = document.querySelector( '#dialog-box #takes-round' );
 // main Restart and Tied
 const restart = document.querySelector( '#dialog-box #restart' );
@@ -724,6 +638,10 @@ const COMBINATIONS_MATRIX = [
 	[ 4, 5, 6 ]
 ];
 const POSSIBLE_PLAYS = [ 5, 2, 4, 6, 8, 1, 3, 7, 9 ];
+
+// CSS Variables
+let cssRoot = document.querySelector( ":root" );
+let cssRootStyle = getComputedStyle( cssRoot );
 
 // player vs player addEventListener
 const playerVsPlayerButton = document.querySelector(
@@ -786,6 +704,8 @@ const restartBtn = document.getElementById( "restart-button" );
 function restartNewRound() {
 	cellsGrid.resetGrid();
 	turn.reset();
+	player1.reset();
+	player2.reset();
 	if ( computer ) {
 		computer.initialize();
 	}
@@ -804,21 +724,20 @@ restartBtn.addEventListener( "click", () => {
 // =======================================================================
 // -------------------------WEB STORAGE-----------------------------------
 // =======================================================================
-window.onload = function () {
-	if ( localStorage.getItem( "pageSave" ) ) {
-		inBody = localStorage.getItem( "pageSave" )
-		console.log( document.querySelector( "body" )
-			.innerHTML );
-		// make the browser to render the DOM
-		var el = document.getElementById( "fixup" );
-		var speed = 10,
-			i = 0,
-			limit = 1000;
-		setTimeout( function loop() {
-			el.innerHTML = i++;
-			if ( i <= limit ) {
-				setTimeout( loop, speed );
-			}
-		}, speed );
-	}
-}
+// window.onload = function () {
+// 	if ( localStorage.getItem( "pageSave" ) ) {
+// 		inBody = localStorage.getItem( "pageSave" )
+// 			.innerHTML;
+// 		// make the browser to render the DOM
+// 		var el = document.getElementById( "fixup" );
+// 		var speed = 10,
+// 			i = 0,
+// 			limit = 1000;
+// 		setTimeout( function loop() {
+// 			el.innerHTML = i++;
+// 			if ( i <= limit ) {
+// 				setTimeout( loop, speed );
+// 			}
+// 		}, speed );
+// 	}
+// }

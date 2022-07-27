@@ -185,6 +185,9 @@ var playerPrototype = {
     if (player2.name === "CPU") {
       document.getElementById("".concat(id)).click();
     }
+  },
+  reset: function reset() {
+    this.track = [0, 0, 0, 0, 0, 0, 0, 0];
   }
 };
 
@@ -193,6 +196,7 @@ function Player() {
   this.name = '';
   this.score = 0;
   this.scoreCell = {};
+  this.track = [0, 0, 0, 0, 0, 0, 0, 0];
 }
 
 Player.prototype = playerPrototype;
@@ -233,9 +237,7 @@ Turn.prototype.constructor = Turn; // ==========================================
 
 var cellPrototype = {
   markAsWinner: function markAsWinner() {
-    var shownIcon = this.element.querySelector(".icon-".concat(this.marked));
-    this.element.style.backgroundColor = shownIcon.querySelector("path").getAttribute("fill");
-    shownIcon.querySelector("path").setAttribute("fill", "rgba(31, 54, 65)");
+    this.element.classList.add("cell-background-win-".concat(this.marked));
   },
   addClickEvent: function addClickEvent() {
     this.clickEventHandler = this.clickEventHandler.bind(this);
@@ -244,126 +246,49 @@ var cellPrototype = {
   removeClickEvent: function removeClickEvent() {
     this.element.removeEventListener("click", this.clickEventHandler, false);
   },
-  activateHoverEvent: function activateHoverEvent() {
-    // checking if the device has pointer
-    if (matchMedia('(pointer:fine)').matches || matchMedia('(pointer:coarse)').matches) {
-      this.hoverEventHandler = this.hoverEventHandler.bind(this);
-      this.element.addEventListener("mouseenter", this.hoverEventHandler, false);
-      this.element.addEventListener("mouseleave", this.hoverEventHandler, false);
-    }
-  },
-  deactivateHoverEvent: function deactivateHoverEvent() {
-    this.element.removeEventListener("mouseenter", this.hoverEventHandler, false);
-    this.element.removeEventListener("mouseleave", this.hoverEventHandler, false);
-  },
   resetCell: function resetCell() {
-    this.deactivateHoverEvent();
-    this.showCellMark();
     this.addClickEvent();
-    this.resetCellBackgroundAndSvgsFill();
+    this.resetCellBackground();
+    this.marked = "";
   },
-  resetCellBackgroundAndSvgsFill: function resetCellBackgroundAndSvgsFill() {
-    var listOfIcons = this.element.querySelectorAll("svg");
-
-    var _iterator = _createForOfIteratorHelper(listOfIcons.entries()),
-        _step;
-
-    try {
-      for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var _step$value = _slicedToArray(_step.value, 2);
-
-        key = _step$value[0];
-        value = _step$value[1];
-
-        if (value.classList.contains("icon-x")) {
-          value.querySelector("path").setAttribute("fill", "#31C3BD");
-        } else if (value.classList.contains("icon-o")) {
-          value.querySelector("path").setAttribute("fill", "#F2B137");
-        }
-      }
-    } catch (err) {
-      _iterator.e(err);
-    } finally {
-      _iterator.f();
-    }
-
-    this.element.removeAttribute("style");
+  resetCellBackground: function resetCellBackground() {
+    this.element.removeAttribute("class");
   },
   showCellMark: function showCellMark(mark) {
-    // reset: hiding all icons in this cell
-    var listOfIcons = this.element.querySelectorAll("svg");
-
-    var _iterator2 = _createForOfIteratorHelper(listOfIcons.entries()),
-        _step2;
-
-    try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        var _step2$value = _slicedToArray(_step2.value, 2);
-
-        key = _step2$value[0];
-        value = _step2$value[1];
-        value.classList.add("not-show-element");
-      }
-    } catch (err) {
-      _iterator2.e(err);
-    } finally {
-      _iterator2.f();
-    }
-
-    if (mark) {
-      //making visible only the correspondent icon
-      var icon = event.currentTarget.querySelector(".icon-".concat(mark));
-      icon.classList.remove("not-show-element");
-    }
+    this.element.classList.add("cell-background-".concat(this.marked));
   }
 };
 
-function Cell(id) {
+function Cell(id, element) {
   this.marked = "";
-  this.id = id; // \\3 must precede the id or var if you start it with a number
-
-  this.element = document.querySelector("#\\3".concat(this.id));
-
-  this.hoverEventHandler = function (event) {
-    event.stopPropagation();
-    event.preventDefault();
-    var markToShow;
-
-    switch (event.type) {
-      case "mouseenter":
-        markToShow = "outline-".concat(this.marked);
-        break;
-
-      case "mouseleave":
-        markToShow = this.marked;
-        break;
-    }
-
-    this.showCellMark(markToShow);
-  };
+  this.id = id;
+  this.element = element;
 
   this.clickEventHandler = function (event) {
     event.stopPropagation();
     event.preventDefault(); // Using this if-statement to fix the clicking twice bug
 
     if (!cellsGrid.allCellsId.includes(event.currentTarget.id)) {
-      restartBtn.removeAttribute("disabled");
-      this.showCellMark(turn.currentTurn);
       this.marked = turn.currentTurn;
-      cellsGrid.clickCentinel(this.marked, this.playerName, this.id);
-      this.activateHoverEvent();
+      restartBtn.removeAttribute("disabled");
+      this.showCellMark();
+      cellsGrid.clickCentinel(this.marked, this.playerName, Number(this.id));
       this.removeClickEvent();
-      computer.anotate();
+
+      if (player2.name === "CPU") {
+        computer.anotate();
+      }
+
       turn.switch();
     } // managing computer move
 
 
-    if (computer.isItMyTurn()) {
-      var computerMove = computer.chooseMove();
-      player2.generateClick(computerMove);
+    if (player2.name === "CPU") {
+      if (computer.isItMyTurn()) {
+        var computerMove = computer.chooseMove();
+        player2.generateClick(computerMove);
+      }
     }
-
-    localStorage.setItem("pageSave", inBody);
   };
 }
 
@@ -376,19 +301,17 @@ var cellsGridPrototype = {
     var cellArrayPosition;
     var cellElements = document.querySelectorAll("#start #cells > div");
 
-    var _iterator3 = _createForOfIteratorHelper(cellElements.entries()),
-        _step3;
+    var _iterator = _createForOfIteratorHelper(cellElements.entries()),
+        _step;
 
     try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        var _step3$value = _slicedToArray(_step3.value, 2);
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var _step$value = _slicedToArray(_step.value, 2);
 
-        key = _step3$value[0];
-        cellElement = _step3$value[1];
+        key = _step$value[0];
+        cellElement = _step$value[1];
 
-        var _cell = new Cell(cellElement.id);
-
-        _cell.element = cellElement;
+        var _cell = new Cell(cellElement.id, cellElement);
 
         _cell.addClickEvent();
 
@@ -396,160 +319,91 @@ var cellsGridPrototype = {
         this.cells.splice(cellArrayPosition, 1, _cell);
       }
     } catch (err) {
-      _iterator3.e(err);
+      _iterator.e(err);
     } finally {
-      _iterator3.f();
+      _iterator.f();
     }
-
-    this.xCells.playerName = player1.mark === "x" ? player1.name : player2.name;
-    this.oCells.playerName = player1.mark === "o" ? player1.name : player2.name;
   },
   clickCentinel: function clickCentinel(mark, name, cellId) {
     this.totalClicks++;
-    this.allCellsId.push(cellId); // update the 'x' clicks counter and 'o' clicks counter
+    this.allCellsId.push(cellId); // update players track arrays
 
-    switch (mark) {
-      case "x":
-        this.xCells.ids.push(Number(cellId));
-        break;
-
-      case "o":
-        this.oCells.ids.push(Number(cellId));
-        break;
-    } // check if the one clicked already won
-
-
-    this.winnerCentinel(mark);
-  },
-  winnerCentinel: function winnerCentinel(markToCheck) {
-    initialArray = this["".concat(markToCheck, "Cells")].ids.map(function (x) {
-      return x;
-    });
-    var finalArray = [];
-    var length = initialArray.length;
-    var sum = initialArray.reduce(function (previous, current) {
-      return previous + current;
-    });
-
-    if (length === 3 && sum === 15) {
-      finalArray = initialArray.map(function (x) {
-        return x;
+    if (mark === player1.mark) {
+      this.combinations.forEach(function (e, i) {
+        if (e.includes(cellId)) {
+          player1.track[i]++;
+        }
       });
-      this.summary(markToCheck, finalArray);
+    } else if (mark === player2.mark) {
+      this.combinations.forEach(function (e, i) {
+        if (e.includes(cellId)) {
+          player2.track[i]++;
+        }
+      });
+    }
+
+    this.tiesTrack = function () {
+      var result = [];
+
+      for (var i = 0; i < 8; i++) {
+        result.push(player1.track[i] * player2.track[i]);
+      }
+
+      return result;
+    };
+
+    this.winnerCentinel();
+  },
+  winnerCentinel: function winnerCentinel() {
+    var player1TrackIndex = player1.track.includes(3) ? player1.track.findIndex(function (x) {
+      return x === 3;
+    }) : false;
+    var player2TrackIndex = player2.track.includes(3) ? player2.track.findIndex(function (x) {
+      return x === 3;
+    }) : false;
+    var tiedGame = !this.tiesTrack().includes(0);
+
+    if (player1TrackIndex) {
+      this.won.playerName = player1.name;
+      this.won.mark = player1.mark;
+      this.won.cellsId = this.combinations[player1TrackIndex];
+      player1.score++;
+      this.summary(this.won);
+      return;
+    } else if (player2TrackIndex) {
+      this.won.playerName = player2.name;
+      this.won.mark = player2.mark;
+      this.won.cellsId = this.combinations[player2TrackIndex];
+      player2.score++;
+      this.summary(this.won);
+      return;
+    } else if (tiedGame) {
+      this.tiesScore++;
+      this.won.playerName = "none";
+      this.summary(this.won);
       return;
     }
-
-    if (length > 3) {
-      if (length === 4) {
-        var matriz = [[0, 1, 3], [0, 2, 3], [1, 2, 3]];
-      } else {
-        matriz = [[0, 1, 4], [0, 2, 4], [0, 3, 4], [1, 2, 4], [1, 3, 4], [2, 3, 4]];
-      }
-
-      var _iterator4 = _createForOfIteratorHelper(matriz),
-          _step4;
-
-      try {
-        for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-          var matrizElem = _step4.value;
-
-          var _iterator5 = _createForOfIteratorHelper(matrizElem),
-              _step5;
-
-          try {
-            for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
-              var _value = _step5.value;
-              finalArray.push(this["".concat(markToCheck, "Cells")].ids[_value]);
-            }
-          } catch (err) {
-            _iterator5.e(err);
-          } finally {
-            _iterator5.f();
-          }
-
-          sum = finalArray.reduce(function (previous, current) {
-            return previous + current;
-          });
-
-          if (sum === 15) {
-            this.summary(markToCheck, finalArray);
-            return;
-          } else {
-            finalArray = [];
-          }
-        }
-      } catch (err) {
-        _iterator4.e(err);
-      } finally {
-        _iterator4.f();
-      }
-
-      if (this.totalClicks === 9) {
-        this.summary();
-        return;
-      }
-    }
   },
-  summary: function summary() {
-    var markWon = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
-    var winnerCells = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : [];
-
-    switch (markWon) {
-      case "x":
-        this.won.mark = "x";
-        this.won.playerName = this.xCells.playerName;
-        this.won.cellsId = winnerCells.map(function (x) {
-          return x;
-        });
-        break;
-
-      case "o":
-        this.won.mark = "o";
-        this.won.playerName = this.oCells.playerName;
-        this.won.cellsId = winnerCells.map(function (x) {
-          return x;
-        });
-        break;
-
-      default:
-        this.tiesScore++;
-    }
-
+  summary: function summary(winnerData) {
     this.markWinnerCells(this.won.cellsId);
-    this.manageUpdateScore();
-
-    var _iterator6 = _createForOfIteratorHelper(cellsGrid.cells),
-        _step6;
-
-    try {
-      for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
-        cell = _step6.value;
-        cell.removeClickEvent();
-      }
-    } catch (err) {
-      _iterator6.e(err);
-    } finally {
-      _iterator6.f();
-    }
-
+    this.UpdateScore();
+    this.removeCellsClick();
     dialogBox.show();
     this.showDialog();
   },
-  manageUpdateScore: function manageUpdateScore() {
+  UpdateScore: function UpdateScore() {
     var player = this.won.playerName;
 
     switch (player) {
       case player1.name:
-        player1.score++;
         player1.updateScore();
         break;
 
       case player2.name:
-        player2.score++;
         player2.updateScore();
         break;
 
-      default:
+      case "none":
         var tieScoreSlot = document.querySelector("#start #ties");
         var scoreString = this.tiesScore.toString();
 
@@ -565,7 +419,7 @@ var cellsGridPrototype = {
     var mark = this.won.mark;
     var player = this.won.playerName;
 
-    if (mark === "") {
+    if (player === "none") {
       configurePoppupDialog("tied");
     }
 
@@ -607,56 +461,62 @@ var cellsGridPrototype = {
     }
   },
   resetGrid: function resetGrid() {
-    var _iterator7 = _createForOfIteratorHelper(this.cells),
-        _step7;
+    var _iterator2 = _createForOfIteratorHelper(this.cells),
+        _step2;
 
     try {
-      for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
-        cellElement = _step7.value;
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        cellElement = _step2.value;
         cellElement.resetCell();
       }
     } catch (err) {
-      _iterator7.e(err);
+      _iterator2.e(err);
     } finally {
-      _iterator7.f();
+      _iterator2.f();
     }
 
     this.won.cellsId = [];
     this.won.playerName = "";
     this.won.mark = "";
-    this.xCells.ids = [];
-    this.oCells.ids = [];
     this.totalClicks = 0;
     this.allCellsId = [];
+    this.tiesTrack = [0, 0, 0, 0, 0, 0, 0, 0];
   },
   markWinnerCells: function markWinnerCells(cellsIds) {
-    var _iterator8 = _createForOfIteratorHelper(cellsIds),
-        _step8;
+    var _iterator3 = _createForOfIteratorHelper(cellsIds),
+        _step3;
 
     try {
-      for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
-        cellId = _step8.value;
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        cellId = _step3.value;
         var pos = cellId - 1;
         this.cells[pos].markAsWinner();
       }
     } catch (err) {
-      _iterator8.e(err);
+      _iterator3.e(err);
     } finally {
-      _iterator8.f();
+      _iterator3.f();
     }
   },
-  deactivateCellsClick: function deactivateCellsClick() {}
+  removeCellsClick: function removeCellsClick() {
+    var _iterator4 = _createForOfIteratorHelper(cellsGrid.cells),
+        _step4;
+
+    try {
+      for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
+        cell = _step4.value;
+        cell.removeClickEvent();
+      }
+    } catch (err) {
+      _iterator4.e(err);
+    } finally {
+      _iterator4.f();
+    }
+  },
+  updateRecord: function updateRecord() {}
 };
 
 function CellsGrid() {
-  this.xCells = {
-    playerName: "",
-    ids: []
-  };
-  this.oCells = {
-    playerName: "",
-    ids: []
-  };
   this.won = {
     playerName: "",
     cellsId: [],
@@ -666,6 +526,8 @@ function CellsGrid() {
   this.totalClicks = 0;
   this.tiesScore = 0;
   this.allCellsId = [];
+  this.combinations = [[1, 5, 9], [1, 6, 8], [2, 4, 9], [2, 5, 8], [2, 6, 7], [3, 4, 8], [3, 5, 7], [4, 5, 6]];
+  this.tiesTrack = [0, 0, 0, 0, 0, 0, 0, 0];
 }
 
 CellsGrid.prototype = cellsGridPrototype;
@@ -674,36 +536,28 @@ CellsGrid.prototype.constructor = CellsGrid; // ================================
 
 computerPrototype = {
   initialize: function initialize() {
-    this.combinations = JSON.parse(JSON.stringify(COMBINATIONS_MATRIX));
     this.possiblePlays = JSON.parse(JSON.stringify(POSSIBLE_PLAYS));
-    this.computerTrackArray = [0, 0, 0, 0, 0, 0, 0, 0];
-    this.playerTrackArray = [0, 0, 0, 0, 0, 0, 0, 0];
   },
-  // updates the player and computer track arrays and eliminates the current move
-  // from the possible plays array
   anotate: function anotate() {
-    var _this = this;
-
     // pop out the number clicked from the possible future moves
     var cellClicked = Number(cellsGrid.allCellsId[cellsGrid.allCellsId.length - 1]);
     var index = this.possiblePlays.findIndex(function (x) {
       return x === cellClicked;
     });
-    this.possiblePlays.splice(index, 1); // keeping track of the combinations used for each player
-
-    if (!this.isItMyTurn()) {
-      this.combinations.forEach(function (e, i) {
-        if (e.includes(cellClicked)) {
-          _this.playerTrackArray[i]++;
-        }
-      });
-    } else {
-      this.combinations.forEach(function (e, i) {
-        if (e.includes(cellClicked)) {
-          _this.computerTrackArray[i]++;
-        }
-      });
-    }
+    this.possiblePlays.splice(index, 1); // // keeping track of the combinations used for each player
+    // if ( !this.isItMyTurn() ) {
+    // 	this.combinations.forEach( ( e, i ) => {
+    // 		if ( e.includes( cellClicked ) ) {
+    // 			this.playerTrackArray[ i ]++;
+    // 		}
+    // 	} );
+    // } else {
+    // 	this.combinations.forEach( ( e, i ) => {
+    // 		if ( e.includes( cellClicked ) ) {
+    // 			this.computerTrackArray[ i ]++;
+    // 		}
+    // 	} );
+    // }
   },
   // Analize the options and return the chosen move
   chooseMove: function chooseMove() {
@@ -713,72 +567,72 @@ computerPrototype = {
     var playerHaveEmptyCombs = this.havePEmptyCombs();
 
     if (iHaveWinningMove || iHaveWinningMove === 0) {
-      var _iterator9 = _createForOfIteratorHelper(this.possiblePlays),
-          _step9;
+      var _iterator5 = _createForOfIteratorHelper(this.possiblePlays),
+          _step5;
 
       try {
-        for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-          var element = _step9.value;
+        for (_iterator5.s(); !(_step5 = _iterator5.n()).done;) {
+          var element = _step5.value;
 
-          if (this.combinations[iHaveWinningMove].includes(element)) {
+          if (cellsGrid.combinations[iHaveWinningMove].includes(element)) {
             return element;
           }
         }
       } catch (err) {
-        _iterator9.e(err);
+        _iterator5.e(err);
       } finally {
-        _iterator9.f();
+        _iterator5.f();
       }
     } else if (playerHaveWinningMove || playerHaveWinningMove === 0) {
-      var _iterator10 = _createForOfIteratorHelper(this.possiblePlays),
-          _step10;
+      var _iterator6 = _createForOfIteratorHelper(this.possiblePlays),
+          _step6;
 
       try {
-        for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
-          var _element = _step10.value;
+        for (_iterator6.s(); !(_step6 = _iterator6.n()).done;) {
+          var _element = _step6.value;
 
-          if (this.combinations[playerHaveWinningMove].includes(_element)) {
+          if (cellsGrid.combinations[playerHaveWinningMove].includes(_element)) {
             return _element;
           }
         }
       } catch (err) {
-        _iterator10.e(err);
+        _iterator6.e(err);
       } finally {
-        _iterator10.f();
+        _iterator6.f();
       }
     } else if (playerHaveHalfEmptyCombs || playerHaveEmptyCombs === 0) {
-      var _iterator11 = _createForOfIteratorHelper(this.possiblePlays),
-          _step11;
+      var _iterator7 = _createForOfIteratorHelper(this.possiblePlays),
+          _step7;
 
       try {
-        for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
-          var _element2 = _step11.value;
+        for (_iterator7.s(); !(_step7 = _iterator7.n()).done;) {
+          var _element2 = _step7.value;
 
-          if (this.combinations[playerHaveHalfEmptyCombs].includes(_element2)) {
+          if (cellsGrid.combinations[playerHaveHalfEmptyCombs].includes(_element2)) {
             return _element2;
           }
         }
       } catch (err) {
-        _iterator11.e(err);
+        _iterator7.e(err);
       } finally {
-        _iterator11.f();
+        _iterator7.f();
       }
     } else if (playerHaveEmptyCombs || playerHaveEmptyCombs === 0) {
-      var _iterator12 = _createForOfIteratorHelper(this.possiblePlays),
-          _step12;
+      var _iterator8 = _createForOfIteratorHelper(this.possiblePlays),
+          _step8;
 
       try {
-        for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
-          var _element3 = _step12.value;
+        for (_iterator8.s(); !(_step8 = _iterator8.n()).done;) {
+          var _element3 = _step8.value;
 
-          if (this.combinations[playerHaveEmptyCombs].includes(_element3)) {
+          if (cellsGrid.combinations[playerHaveEmptyCombs].includes(_element3)) {
             return _element3;
           }
         }
       } catch (err) {
-        _iterator12.e(err);
+        _iterator8.e(err);
       } finally {
-        _iterator12.f();
+        _iterator8.f();
       }
     } else {
       return computer.takeFirstOpt();
@@ -793,44 +647,36 @@ computerPrototype = {
     return false;
   },
   haveIWinningMove: function haveIWinningMove() {
-    var _this2 = this;
-
     var indexToReturn = null;
-    this.computerTrackArray.forEach(function (element, index) {
-      if (element === 2 && _this2.playerTrackArray[index] == 0) {
+    player2.track.forEach(function (element, index) {
+      if (element === 2 && player1.track[index] == 0) {
         indexToReturn = index;
       }
     });
     return indexToReturn;
   },
   havePWinningMove: function havePWinningMove() {
-    var _this3 = this;
-
     var indexToReturn = null;
-    this.playerTrackArray.forEach(function (element, index) {
-      if (element === 2 && _this3.computerTrackArray[index] === 0) {
+    player1.track.forEach(function (element, index) {
+      if (element === 2 && player2.track[index] === 0) {
         indexToReturn = index;
       }
     });
     return indexToReturn;
   },
   havePEmptyCombs: function havePEmptyCombs() {
-    var _this4 = this;
-
     var indexToReturn = null;
-    this.playerTrackArray.forEach(function (element, index) {
-      if (element === 0 && _this4.computerTrackArray[index] === 0) {
+    player1.track.forEach(function (element, index) {
+      if (element === 0 && player2.track[index] === 0) {
         indexToReturn = index;
       }
     });
     return indexToReturn;
   },
   havePHalfEmptyCombs: function havePHalfEmptyCombs() {
-    var _this5 = this;
-
     var indexToReturn = null;
-    this.playerTrackArray.forEach(function (element, index) {
-      if (element === 0 && _this5.computerTrackArray[index] === 1) {
+    player1.track.forEach(function (element, index) {
+      if (element === 0 && player2.track[index] === 1) {
         indexToReturn = index;
       }
     });
@@ -842,10 +688,7 @@ computerPrototype = {
 };
 
 function Computer() {
-  this.combinations = [];
   this.possiblePlays = [];
-  this.computerTrackArray = [];
-  this.playerTrackArray = [];
 }
 
 Computer.prototype = computerPrototype;
@@ -857,61 +700,62 @@ function configurePoppupDialog(kind) {
     case type.first:
       playerWonLost.classList.remove('not-show-element');
       playerWonLost.querySelector('.player-number').textContent = "1";
-      iconX.classList.remove('not-show-element');
+      iconContainer.classList.add("msg-background-x");
       takesRound.classList.remove('not-show-element');
-      takesRound.style.color = iconX.querySelector('path').getAttribute("fill");
+      takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
       break;
 
     case type.second:
       playerWonLost.classList.remove('not-show-element');
       playerWonLost.querySelector('.player-number').textContent = "1";
-      iconO.classList.remove('not-show-element');
+      iconContainer.classList.add('msg-background-o');
       takesRound.classList.remove('not-show-element');
-      takesRound.style.color = iconO.querySelector('path').getAttribute("fill");
+      takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
       break;
+      ye;
 
     case type.third:
       playerWonLost.classList.remove('not-show-element');
       playerWonLost.querySelector('.player-number').textContent = "2";
-      iconX.classList.remove('not-show-element');
+      iconContainer.classList.add("msg-background-x");
       takesRound.classList.remove('not-show-element');
-      takesRound.style.color = iconX.querySelector('path').getAttribute("fill");
+      takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
       break;
 
     case type.fourth:
       playerWonLost.classList.remove('not-show-element');
       playerWonLost.querySelector('.player-number').textContent = "2";
-      iconO.classList.remove('not-show-element');
+      iconContainer.classList.add('msg-background-o');
       takesRound.classList.remove('not-show-element');
-      takesRound.style.color = iconO.querySelector('path').getAttribute("fill");
+      takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
       break;
 
     case type.fifth:
       won.classList.remove('not-show-element');
-      iconX.classList.remove('not-show-element');
+      iconContainer.classList.add('msg-background-x');
       takesRound.classList.remove('not-show-element');
-      takesRound.style.color = iconX.querySelector('path').getAttribute("fill");
+      takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
       break;
 
     case type.sixth:
       won.classList.remove('not-show-element');
-      iconO.classList.remove('not-show-element');
+      iconContainer.classList.add('msg-background-o');
       takesRound.classList.remove('not-show-element');
-      takesRound.style.color = iconO.querySelector('path').getAttribute("fill");
+      takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
       break;
 
     case type.seventh:
       lost.classList.remove('not-show-element');
-      iconX.classList.remove('not-show-element');
+      iconContainer.classList.add('msg-background-x');
       takesRound.classList.remove('not-show-element');
-      takesRound.style.color = iconX.querySelector('path').getAttribute("fill");
+      takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
       break;
 
     case type.eighth:
       lost.classList.remove('not-show-element');
-      iconO.classList.remove('not-show-element');
+      iconContainer.classList.add('msg-background-o');
       takesRound.classList.remove('not-show-element');
-      takesRound.style.color = iconO.querySelector('path').getAttribute("fill");
+      takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
       break;
 
     case type.nineth:
@@ -944,21 +788,21 @@ function configurePoppupDialog(kind) {
 function resetDialog() {
   var dialogElemList = document.querySelectorAll("#dialog-box p, #dialog-box h3, #dialog-box svg");
 
-  var _iterator13 = _createForOfIteratorHelper(dialogElemList.entries()),
-      _step13;
+  var _iterator9 = _createForOfIteratorHelper(dialogElemList.entries()),
+      _step9;
 
   try {
-    for (_iterator13.s(); !(_step13 = _iterator13.n()).done;) {
-      var _step13$value = _slicedToArray(_step13.value, 2),
-          _key = _step13$value[0],
-          entrie = _step13$value[1];
+    for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+      var _step9$value = _slicedToArray(_step9.value, 2),
+          _key = _step9$value[0],
+          entrie = _step9$value[1];
 
       entrie.classList.add('not-show-element');
     }
   } catch (err) {
-    _iterator13.e(err);
+    _iterator9.e(err);
   } finally {
-    _iterator13.f();
+    _iterator9.f();
   }
 
   ;
@@ -973,8 +817,6 @@ var won = document.querySelector('#dialog-box #won');
 var lost = document.querySelector('#dialog-box #lost'); // main take a round
 
 var iconContainer = document.querySelector("#msg-body .icon-container");
-var iconX = document.querySelector('#dialog-box #icon-x');
-var iconO = document.querySelector('#dialog-box #icon-o');
 var takesRound = document.querySelector('#dialog-box #takes-round'); // main Restart and Tied
 
 var restart = document.querySelector('#dialog-box #restart');
@@ -1021,7 +863,10 @@ for (var _i2 = 0, _arr2 = [mark.btnX, mark.btnO]; _i2 < _arr2.length; _i2++) {
 
 
 var COMBINATIONS_MATRIX = [[1, 5, 9], [1, 6, 8], [2, 4, 9], [2, 5, 8], [2, 6, 7], [3, 4, 8], [3, 5, 7], [4, 5, 6]];
-var POSSIBLE_PLAYS = [5, 2, 4, 6, 8, 1, 3, 7, 9]; // player vs player addEventListener
+var POSSIBLE_PLAYS = [5, 2, 4, 6, 8, 1, 3, 7, 9]; // CSS Variables
+
+var cssRoot = document.querySelector(":root");
+var cssRootStyle = getComputedStyle(cssRoot); // player vs player addEventListener
 
 var playerVsPlayerButton = document.querySelector('#player1-vs-player2-button');
 var cpuVsPlayerButton = document.querySelector("#cpu-vs-player-button");
@@ -1080,6 +925,8 @@ var restartBtn = document.getElementById("restart-button");
 function restartNewRound() {
   cellsGrid.resetGrid();
   turn.reset();
+  player1.reset();
+  player2.reset();
 
   if (computer) {
     computer.initialize();
@@ -1100,25 +947,23 @@ restartBtn.addEventListener("click", function () {
 }); // =======================================================================
 // -------------------------WEB STORAGE-----------------------------------
 // =======================================================================
-
-window.onload = function () {
-  if (localStorage.getItem("pageSave")) {
-    inBody = localStorage.getItem("pageSave");
-    console.log(document.querySelector("body").innerHTML); // make the browser to render the DOM
-
-    var el = document.getElementById("fixup");
-    var speed = 10,
-        i = 0,
-        limit = 1000;
-    setTimeout(function loop() {
-      el.innerHTML = i++;
-
-      if (i <= limit) {
-        setTimeout(loop, speed);
-      }
-    }, speed);
-  }
-};
+// window.onload = function () {
+// 	if ( localStorage.getItem( "pageSave" ) ) {
+// 		inBody = localStorage.getItem( "pageSave" )
+// 			.innerHTML;
+// 		// make the browser to render the DOM
+// 		var el = document.getElementById( "fixup" );
+// 		var speed = 10,
+// 			i = 0,
+// 			limit = 1000;
+// 		setTimeout( function loop() {
+// 			el.innerHTML = i++;
+// 			if ( i <= limit ) {
+// 				setTimeout( loop, speed );
+// 			}
+// 		}, speed );
+// 	}
+// }
 },{}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -1147,7 +992,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "55797" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53694" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};
