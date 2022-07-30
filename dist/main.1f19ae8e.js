@@ -132,10 +132,71 @@ function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o =
 
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
+// ============================================================================
+// ---------------------------------CONSTS-------------------------------------
+// ============================================================================
+var COMBINATIONS_MATRIX = [[1, 5, 9], [1, 6, 8], [2, 4, 9], [2, 5, 8], [2, 6, 7], [3, 4, 8], [3, 5, 7], [4, 5, 6]];
+var POSSIBLE_PLAYS = [5, 2, 4, 6, 8, 1, 3, 7, 9]; // DOM INTIALIZING
+// page new game
+
+var newGame = document.querySelector('#new-game'); // choice buttons
+
+var markBtnO = document.querySelector('#o-choice-button');
+var markBtnX = document.querySelector('#x-choice-button'); // page start
+
+var start = document.querySelector('#start');
+var cellElements = document.querySelectorAll("#start #cells > div");
+var turnIconX = document.querySelector('.turn .icon-x');
+var turnIconO = document.querySelector('.turn .icon-o');
+var xScore = document.getElementById("x-score");
+var oScore = document.getElementById("o-score");
+var tie = document.getElementById("ties"); // dialog page
+
+var dialogBox = document.querySelector("#dialog-box"); // CSS Variables
+
+var cssRoot = document.querySelector(":root");
+var cssRootStyle = getComputedStyle(cssRoot); // BUTTONS
+
+var playerVsPlayerButton = document.querySelector('#player1-vs-player2-button');
+var cpuVsPlayerButton = document.querySelector("#cpu-vs-player-button");
+var restartBtn = document.getElementById("restart-button"); // dialog initializing
+// head
+
+var playerWonLost = document.querySelector('#dialog-box #player-won-lost');
+var won = document.querySelector('#dialog-box #won');
+var lost = document.querySelector('#dialog-box #lost'); // main take a round
+
+var iconContainer = document.querySelector("#msg-body .icon-container");
+var takesRound = document.querySelector('#dialog-box #takes-round'); // main Restart and Tied
+
+var restart = document.querySelector('#dialog-box #restart');
+var tied = document.querySelector('#dialog-box #tied'); // foot
+
+var quitCancelBtn = document.querySelector('#dialog-box footer #quit-cancel');
+var roundRestartBtn = document.querySelector('#dialog-box footer #round-restart');
+var type = {
+  first: 'player1-X',
+  second: 'player1-O',
+  third: 'player2-X',
+  fourth: 'player2-O',
+  fifth: 'won-X',
+  sixth: 'won-O',
+  seventh: 'lost-X',
+  eighth: 'lost-O',
+  nineth: 'restart',
+  tenth: 'tied'
+}; // to sessionStorage use
+
+var markObj, turnObj, player1Obj, player2Obj, cellsGridObj, computerObj, xScoreContent, oScoreContent;
+var newGameClass, xChoiceButtonClass, oChoiceButtonClass, startClass, turnIconXClass, turnIconOClass, restartBtnClass, cellsClass, tieContent;
+var cellObjs = []; // =============================================================================
+// -------------------------------------OBJECTS---------------------------------
+// =============================================================================
 // MARK OBJECT
+
 var markPrototype = {
   updateMark: function updateMark() {
-    if (this.btnX.classList.contains('active-mark-button')) {
+    if (markBtnX.classList.contains('active-mark-button')) {
       this.p1Mark = 'x';
       this.p2Mark = 'o';
     } else {
@@ -144,22 +205,33 @@ var markPrototype = {
     }
   },
   switch: function _switch() {
-    this.btnX.classList.toggle('active-mark-button');
-    this.btnO.classList.toggle('active-mark-button');
+    markBtnX.classList.toggle('active-mark-button');
+    markBtnO.classList.toggle('active-mark-button');
     this.updateMark();
+  },
+
+  get getProperties() {
+    var obj = {
+      p1Mark: this.p1Mark,
+      p2Mark: this.p2Mark
+    };
+    return obj;
+  },
+
+  set setProperties(obj) {
+    this.p1Mark = obj.p1Mark;
+    this.p2Mark = obj.p2Mark;
   }
+
 }; // Mark constructor function
 
 function Mark() {
   this.p1Mark = 'x';
   this.p2Mark = 'o';
-  this.btnX = document.querySelector('#x-choice-button');
-  this.btnO = document.querySelector('#o-choice-button');
 }
 
 Mark.prototype = markPrototype;
-Mark.prototype.constructor = Mark; // ==========================================================================
-// PLAYER OBJECT
+Mark.prototype.constructor = Mark; // PLAYER OBJECT
 
 var playerPrototype = {
   updateScore: function updateScore() {
@@ -169,26 +241,48 @@ var playerPrototype = {
       scoreString = '0' + scoreString;
     }
 
-    this.scoreCell.querySelector('.score').textContent = scoreString;
+    if (this.mark === "x") {
+      xScore.querySelector('.score').textContent = scoreString;
+    } else {
+      oScore.querySelector('.score').textContent = scoreString;
+    }
   },
   initializeScore: function initializeScore() {
     if (this.mark === 'x') {
-      this.scoreCell = document.querySelector('#x-score');
+      this.scoreCell = xScore;
     } else {
-      this.scoreCell = document.querySelector('#o-score');
+      this.scoreCell = oScore;
     }
 
     this.scoreCell.querySelector('p span').textContent = this.name;
   },
   //For CPU user
   generateClick: function generateClick(id) {
-    if (player2.name === "CPU") {
+    if (player2.name === "CPU" && cellsGrid.totalClicks < 9) {
       document.getElementById("".concat(id)).click();
     }
   },
   reset: function reset() {
     this.track = [0, 0, 0, 0, 0, 0, 0, 0];
+  },
+
+  get getProperties() {
+    var obj = {
+      mark: this.mark,
+      name: this.name,
+      score: this.score,
+      track: this.track
+    };
+    return obj;
+  },
+
+  set setProperties(obj) {
+    this.mark = obj.mark;
+    this.name = obj.name;
+    this.score = obj.score;
+    this.track = obj.track;
   }
+
 };
 
 function Player() {
@@ -200,8 +294,7 @@ function Player() {
 }
 
 Player.prototype = playerPrototype;
-Player.prototype.constructor = Player; // ==============================================================================
-// TURN OBJECT
+Player.prototype.constructor = Player; // TURN OBJECT
 
 var turnPrototype = {
   switch: function _switch() {
@@ -212,57 +305,89 @@ var turnPrototype = {
     this.show();
   },
   show: function show() {
-    var markPrevious = this.previousTurn.toUpperCase();
-    var markCurrent = this.currentTurn.toUpperCase();
-    this['icon' + markCurrent].classList.remove('not-show-element');
-    this['icon' + markPrevious].classList.add('not-show-element');
+    var markPrevious = this.previousTurn;
+    var markCurrent = this.currentTurn;
+    turnIconO.classList.remove('not-show-element');
+    turnIconX.classList.add('not-show-element');
+
+    if (markCurrent === "x") {
+      turnIconX.classList.remove('not-show-element');
+      turnIconO.classList.add('not-show-element');
+    }
   },
   reset: function reset() {
     this.currentTurn = 'x';
     this.previousTurn = 'o';
     this.show();
+  },
+
+  get getProperties() {
+    var obj = {
+      currentTurn: this.currentTurn,
+      previousTurn: this.previousTurn
+    };
+    return obj;
+  },
+
+  set setProperties(obj) {
+    this.currentTurn = obj.currentTurn;
+    this.previousTurn = obj.previousTurn;
   }
+
 };
 
 function Turn() {
   this.currentTurn = 'x';
   this.previousTurn = 'o';
-  this.iconX = document.querySelector('.turn .icon-x');
-  this.iconO = document.querySelector('.turn .icon-o');
 }
 
 Turn.prototype = turnPrototype;
-Turn.prototype.constructor = Turn; // ============================================================================
-// CELL OBJECT
+Turn.prototype.constructor = Turn; // CELL OBJECT
 
 var cellPrototype = {
   markAsWinner: function markAsWinner() {
-    this.element.classList.add("cell-background-win-".concat(this.marked));
+    document.getElementById(this.id).classList.add("cell-background-win-".concat(this.marked));
   },
   addClickEvent: function addClickEvent() {
     this.clickEventHandler = this.clickEventHandler.bind(this);
-    this.element.addEventListener("click", this.clickEventHandler, false);
+
+    if (!this.marked) {
+      document.getElementById(this.id).addEventListener("click", this.clickEventHandler, false);
+    }
   },
   removeClickEvent: function removeClickEvent() {
-    this.element.removeEventListener("click", this.clickEventHandler, false);
+    document.getElementById(this.id).removeEventListener("click", this.clickEventHandler, false);
   },
   resetCell: function resetCell() {
+    this.marked = "";
     this.addClickEvent();
     this.resetCellBackground();
-    this.marked = "";
   },
   resetCellBackground: function resetCellBackground() {
-    this.element.removeAttribute("class");
+    document.getElementById(this.id).removeAttribute("class");
   },
   showCellMark: function showCellMark(mark) {
-    this.element.classList.add("cell-background-".concat(this.marked));
+    document.getElementById(this.id).classList.add("cell-background-".concat(this.marked));
+  },
+
+  get getProperties() {
+    var obj = {
+      marked: this.marked,
+      id: this.id
+    };
+    return obj;
+  },
+
+  set setProperties(obj) {
+    this.marked = obj.marked;
+    this.id = obj.id;
   }
+
 };
 
-function Cell(id, element) {
+function Cell(id) {
   this.marked = "";
   this.id = id;
-  this.element = element;
 
   this.clickEventHandler = function (event) {
     event.stopPropagation();
@@ -272,7 +397,7 @@ function Cell(id, element) {
       this.marked = turn.currentTurn;
       restartBtn.removeAttribute("disabled");
       this.showCellMark();
-      cellsGrid.clickCentinel(this.marked, this.playerName, Number(this.id));
+      cellsGrid.clickCentinel(this.marked, this.playerName, this.id);
       this.removeClickEvent();
 
       if (player2.name === "CPU") {
@@ -280,43 +405,30 @@ function Cell(id, element) {
       }
 
       turn.switch();
-    } // managing computer move
+      populateStorage(); // managing computer move
 
-
-    if (player2.name === "CPU") {
-      if (computer.isItMyTurn()) {
-        var computerMove = computer.chooseMove();
-        player2.generateClick(computerMove);
+      if (player2.name === "CPU") {
+        if (computer.isItMyTurn()) {
+          var computerMove = computer.chooseMove();
+          player2.generateClick(computerMove);
+        }
       }
     }
   };
 }
 
 Cell.prototype = cellPrototype;
-Cell.prototype.constructor = Cell; // ===========================================================================
-// CELLSGRID OBJECT
+Cell.prototype.constructor = Cell; // CELLSGRID OBJECT
 
 var cellsGridPrototype = {
-  init: function init() {
-    var cellArrayPosition;
-    var cellElements = document.querySelectorAll("#start #cells > div");
-
-    var _iterator = _createForOfIteratorHelper(cellElements.entries()),
+  addAllCellsClickEvent: function addAllCellsClickEvent() {
+    var _iterator = _createForOfIteratorHelper(cells),
         _step;
 
     try {
       for (_iterator.s(); !(_step = _iterator.n()).done;) {
-        var _step$value = _slicedToArray(_step.value, 2);
-
-        key = _step$value[0];
-        cellElement = _step$value[1];
-
-        var _cell = new Cell(cellElement.id, cellElement);
-
-        _cell.addClickEvent();
-
-        cellArrayPosition = Number(cellElement.id) - 1;
-        this.cells.splice(cellArrayPosition, 1, _cell);
+        cell = _step.value;
+        cell.addClickEvent();
       }
     } catch (err) {
       _iterator.e(err);
@@ -324,19 +436,38 @@ var cellsGridPrototype = {
       _iterator.f();
     }
   },
+  removeCellsClick: function removeCellsClick() {
+    var _iterator2 = _createForOfIteratorHelper(cells),
+        _step2;
+
+    try {
+      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
+        cell = _step2.value;
+        cell.removeClickEvent();
+      }
+    } catch (err) {
+      _iterator2.e(err);
+    } finally {
+      _iterator2.f();
+    }
+  },
+  init: function init() {
+    this.addAllCellsClickEvent();
+  },
   clickCentinel: function clickCentinel(mark, name, cellId) {
     this.totalClicks++;
-    this.allCellsId.push(cellId); // update players track arrays
+    this.allCellsId.push(cellId);
+    var cellIdNumber = Number(cellId); // update players track arrays
 
     if (mark === player1.mark) {
       this.combinations.forEach(function (e, i) {
-        if (e.includes(cellId)) {
+        if (e.includes(cellIdNumber)) {
           player1.track[i]++;
         }
       });
     } else if (mark === player2.mark) {
       this.combinations.forEach(function (e, i) {
-        if (e.includes(cellId)) {
+        if (e.includes(cellIdNumber)) {
           player2.track[i]++;
         }
       });
@@ -363,14 +494,14 @@ var cellsGridPrototype = {
     }) : false;
     var tiedGame = !this.tiesTrack().includes(0);
 
-    if (player1TrackIndex) {
+    if (player1TrackIndex || player1TrackIndex === 0) {
       this.won.playerName = player1.name;
       this.won.mark = player1.mark;
       this.won.cellsId = this.combinations[player1TrackIndex];
       player1.score++;
       this.summary(this.won);
       return;
-    } else if (player2TrackIndex) {
+    } else if (player2TrackIndex || player2TrackIndex === 0) {
       this.won.playerName = player2.name;
       this.won.mark = player2.mark;
       this.won.cellsId = this.combinations[player2TrackIndex];
@@ -390,6 +521,7 @@ var cellsGridPrototype = {
     this.removeCellsClick();
     dialogBox.show();
     this.showDialog();
+    populateDialogStorage();
   },
   UpdateScore: function UpdateScore() {
     var player = this.won.playerName;
@@ -461,18 +593,18 @@ var cellsGridPrototype = {
     }
   },
   resetGrid: function resetGrid() {
-    var _iterator2 = _createForOfIteratorHelper(this.cells),
-        _step2;
+    var _iterator3 = _createForOfIteratorHelper(cells),
+        _step3;
 
     try {
-      for (_iterator2.s(); !(_step2 = _iterator2.n()).done;) {
-        cellElement = _step2.value;
+      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
+        cellElement = _step3.value;
         cellElement.resetCell();
       }
     } catch (err) {
-      _iterator2.e(err);
+      _iterator3.e(err);
     } finally {
-      _iterator2.f();
+      _iterator3.f();
     }
 
     this.won.cellsId = [];
@@ -483,29 +615,14 @@ var cellsGridPrototype = {
     this.tiesTrack = [0, 0, 0, 0, 0, 0, 0, 0];
   },
   markWinnerCells: function markWinnerCells(cellsIds) {
-    var _iterator3 = _createForOfIteratorHelper(cellsIds),
-        _step3;
-
-    try {
-      for (_iterator3.s(); !(_step3 = _iterator3.n()).done;) {
-        cellId = _step3.value;
-        var pos = cellId - 1;
-        this.cells[pos].markAsWinner();
-      }
-    } catch (err) {
-      _iterator3.e(err);
-    } finally {
-      _iterator3.f();
-    }
-  },
-  removeCellsClick: function removeCellsClick() {
-    var _iterator4 = _createForOfIteratorHelper(cellsGrid.cells),
+    var _iterator4 = _createForOfIteratorHelper(cellsIds),
         _step4;
 
     try {
       for (_iterator4.s(); !(_step4 = _iterator4.n()).done;) {
-        cell = _step4.value;
-        cell.removeClickEvent();
+        cellId = _step4.value;
+        var pos = cellId - 1;
+        cells[pos].markAsWinner();
       }
     } catch (err) {
       _iterator4.e(err);
@@ -513,7 +630,26 @@ var cellsGridPrototype = {
       _iterator4.f();
     }
   },
-  updateRecord: function updateRecord() {}
+
+  get getProperties() {
+    var obj = {
+      won: this.won,
+      totalClicks: this.totalClicks,
+      tiesScore: this.tiesScore,
+      allCellsId: this.allCellsId,
+      tiesTrack: this.tiesTrack
+    };
+    return obj;
+  },
+
+  set setProperties(obj) {
+    this.won = obj.won;
+    this.totalClicks = obj.totalClicks;
+    this.tiesScore = obj.tiesScore;
+    this.allCellsId = obj.allCellsId;
+    this.tiesTrack = obj.tiesTrack;
+  }
+
 };
 
 function CellsGrid() {
@@ -522,7 +658,6 @@ function CellsGrid() {
     cellsId: [],
     mark: ""
   };
-  this.cells = [0, 0, 0, 0, 0, 0, 0, 0, 0];
   this.totalClicks = 0;
   this.tiesScore = 0;
   this.allCellsId = [];
@@ -531,8 +666,7 @@ function CellsGrid() {
 }
 
 CellsGrid.prototype = cellsGridPrototype;
-CellsGrid.prototype.constructor = CellsGrid; // =====================================================================
-// COMPUTER OBJECT
+CellsGrid.prototype.constructor = CellsGrid; // COMPUTER OBJECT
 
 computerPrototype = {
   initialize: function initialize() {
@@ -544,20 +678,7 @@ computerPrototype = {
     var index = this.possiblePlays.findIndex(function (x) {
       return x === cellClicked;
     });
-    this.possiblePlays.splice(index, 1); // // keeping track of the combinations used for each player
-    // if ( !this.isItMyTurn() ) {
-    // 	this.combinations.forEach( ( e, i ) => {
-    // 		if ( e.includes( cellClicked ) ) {
-    // 			this.playerTrackArray[ i ]++;
-    // 		}
-    // 	} );
-    // } else {
-    // 	this.combinations.forEach( ( e, i ) => {
-    // 		if ( e.includes( cellClicked ) ) {
-    // 			this.computerTrackArray[ i ]++;
-    // 		}
-    // 	} );
-    // }
+    this.possiblePlays.splice(index, 1);
   },
   // Analize the options and return the chosen move
   chooseMove: function chooseMove() {
@@ -600,7 +721,7 @@ computerPrototype = {
       } finally {
         _iterator6.f();
       }
-    } else if (playerHaveHalfEmptyCombs || playerHaveEmptyCombs === 0) {
+    } else if (playerHaveHalfEmptyCombs || playerHaveHalfEmptyCombs === 0) {
       var _iterator7 = _createForOfIteratorHelper(this.possiblePlays),
           _step7;
 
@@ -634,7 +755,7 @@ computerPrototype = {
       } finally {
         _iterator8.f();
       }
-    } else {
+    } else if (this.possiblePlays.length) {
       return computer.takeFirstOpt();
     }
   },
@@ -684,7 +805,16 @@ computerPrototype = {
   },
   takeFirstOpt: function takeFirstOpt() {
     return this.possiblePlays[0];
+  },
+
+  get getProperties() {
+    return this.possiblePlays;
+  },
+
+  set setProperties(arr) {
+    this.possiblePlays = arr;
   }
+
 };
 
 function Computer() {
@@ -692,7 +822,9 @@ function Computer() {
 }
 
 Computer.prototype = computerPrototype;
-Computer.prototype.constructor = Computer; // ==========================================================================
+Computer.prototype.constructor = Computer; // ============================================================================
+// --------------------------------FUNCTIONS-----------------------------------
+// ============================================================================
 // DIALOG
 
 function configurePoppupDialog(kind) {
@@ -782,7 +914,7 @@ function configurePoppupDialog(kind) {
   }
 
   ;
-  localStorage.setItem("pageSave", inBody);
+  dialogBox.setAttribute("data-type", kind);
 }
 
 function resetDialog() {
@@ -807,70 +939,240 @@ function resetDialog() {
 
   ;
   iconContainer.classList.remove('not-show-element');
-} // dialog initializing
+}
+
+function restartNewRound() {
+  cellsGrid.resetGrid();
+  turn.reset();
+  player1.reset();
+  player2.reset();
+
+  if (player2.name === "CPU") {
+    computer.initialize();
+  }
+
+  restartBtn.setAttribute("disabled", "");
+  populateStorage();
+
+  if (player2.mark === "x" && player2.name === 'CPU') {
+    var computerMove = computer.chooseMove();
+    player2.generateClick(computerMove);
+  }
+}
+
+function cellsCreator() {
+  var cellsArray = [0, 0, 0, 0, 0, 0, 0, 0, 0];
+  var cellPosition;
+
+  var _iterator10 = _createForOfIteratorHelper(cellElements.entries()),
+      _step10;
+
+  try {
+    for (_iterator10.s(); !(_step10 = _iterator10.n()).done;) {
+      var _step10$value = _slicedToArray(_step10.value, 2);
+
+      cellElementKey = _step10$value[0];
+      cellElement = _step10$value[1];
+      var cell = new Cell(cellElement.id, cellElement);
+      cellPosition = Number(cellElement.id) - 1;
+      cellsArray.splice(cellPosition, 1, cell);
+    }
+  } catch (err) {
+    _iterator10.e(err);
+  } finally {
+    _iterator10.f();
+  }
+
+  return cellsArray;
+}
+
+; // ------------------------------session storage functions----------------------
+
+function populateStorage() {
+  // HTML
+  // new Game
+  newGameClass = newGame.getAttribute("class");
+  sessionStorage.setItem("new-game", newGameClass);
+  xChoiceButtonClass = markBtnX.getAttribute("class");
+  oChoiceButtonClass = markBtnO.getAttribute("class");
+  sessionStorage.setItem("x-choice-button", xChoiceButtonClass);
+  sessionStorage.setItem("o-choice-button", oChoiceButtonClass); // start
+
+  startClass = start.getAttribute("class");
+  sessionStorage.setItem("start", startClass);
+  turnIconXClass = turnIconX.getAttribute("class");
+  turnIconOClass = turnIconO.getAttribute("class");
+  sessionStorage.setItem("turnIconX", turnIconXClass);
+  sessionStorage.setItem("turnIconO", turnIconOClass);
+  restartBtnClass = restartBtn.getAttribute("class");
+  sessionStorage.setItem("restart-btn", restartBtnClass);
+  cellsClass = {};
+
+  var _iterator11 = _createForOfIteratorHelper(cells),
+      _step11;
+
+  try {
+    for (_iterator11.s(); !(_step11 = _iterator11.n()).done;) {
+      cell = _step11.value;
+
+      if (cell) {
+        cellsClass[cell.id] = document.getElementById(cell.id).getAttribute("class");
+      }
+    }
+  } catch (err) {
+    _iterator11.e(err);
+  } finally {
+    _iterator11.f();
+  }
+
+  sessionStorage.setItem("cellsClassObj", JSON.stringify(cellsClass));
+  xScoreContent = {
+    xScorePlayer: xScore.querySelector("p").innerHTML,
+    xScoreScore: xScore.querySelector("h4").innerHTML
+  };
+  oScoreContent = {
+    oScorePlayer: oScore.querySelector("p").innerHTML,
+    oScoreScore: oScore.querySelector("h4").innerHTML
+  };
+  tieContent = tie.querySelector("h4").textContent;
+  sessionStorage.setItem("xScoreContentObj", JSON.stringify(xScoreContent));
+  sessionStorage.setItem("oScoreContentObj", JSON.stringify(oScoreContent));
+  sessionStorage.setItem("tieContent", tieContent); // GETTING JAVASCRIPT OBJECTS
+
+  markObj = mark.getProperties;
+  turnObj = turn.getProperties;
+  player1Obj = player1.getProperties;
+  player2Obj = player2.getProperties;
+  cellObjs.length = 0;
+
+  var _iterator12 = _createForOfIteratorHelper(cells),
+      _step12;
+
+  try {
+    for (_iterator12.s(); !(_step12 = _iterator12.n()).done;) {
+      cell = _step12.value;
+      cellObjs.push(cell.getProperties);
+    }
+  } catch (err) {
+    _iterator12.e(err);
+  } finally {
+    _iterator12.f();
+  }
+
+  cellsGridObj = cellsGrid.getProperties;
+  computerObj = computer.getProperties;
+  sessionStorage.setItem("mark", JSON.stringify(markObj));
+  sessionStorage.setItem("turn", JSON.stringify(turnObj));
+  sessionStorage.setItem("player1", JSON.stringify(player1Obj));
+  sessionStorage.setItem("player2", JSON.stringify(player2Obj));
+  sessionStorage.setItem("cells", JSON.stringify(cellObjs));
+  sessionStorage.setItem("cellsGrid", JSON.stringify(cellsGridObj));
+  sessionStorage.setItem("computer", JSON.stringify(computerObj));
+}
+
+function populateDialogStorage() {
+  var dialogBoxObj = {
+    dialogBoxOpen: dialogBox.hasAttribute("open"),
+    type: dialogBox.dataset.type
+  };
+  sessionStorage.setItem("dialogBoxStyle", JSON.stringify(dialogBoxObj));
+}
+
+function setStyle() {
+  // new game
+  newGameClass = sessionStorage.getItem("new-game");
+  newGame.setAttribute("class", newGameClass);
+  xChoiceButtonClass = sessionStorage.getItem("x-choice-button");
+  markBtnX.setAttribute("class", xChoiceButtonClass);
+  oChoiceButtonClass = sessionStorage.getItem("o-choice-button");
+  markBtnO.setAttribute("class", oChoiceButtonClass); // start
+
+  startClass = sessionStorage.getItem("start");
+  start.setAttribute("class", startClass);
+  turnIconXClass = sessionStorage.getItem("turnIconX");
+  turnIconX.setAttribute("class", turnIconXClass);
+  turnIconOClass = sessionStorage.getItem("turnIconO");
+  turnIconO.setAttribute("class", turnIconOClass);
+  restartBtnClass = sessionStorage.getItem("restart-btn");
+  restartBtn.setAttribute("class", restartBtnClass);
+  cellsClass = JSON.parse(sessionStorage.getItem("cellsClassObj"));
+
+  if (cellsClass) {
+    for (var _i2 = 0, _Object$entries = Object.entries(cellsClass); _i2 < _Object$entries.length; _i2++) {
+      var _Object$entries$_i = _slicedToArray(_Object$entries[_i2], 2);
+
+      key = _Object$entries$_i[0];
+      value = _Object$entries$_i[1];
+      document.getElementById(key).setAttribute('class', value);
+    }
+  }
+
+  xScoreContent = JSON.parse(sessionStorage.getItem("xScoreContentObj"));
+  oScoreContent = JSON.parse(sessionStorage.getItem("oScoreContentObj"));
+  tieContent = sessionStorage.getItem("tieContent");
+  xScore.querySelector("p").innerHTML = xScoreContent.xScorePlayer;
+  xScore.querySelector("h4").innerHTML = xScoreContent.xScoreScore;
+  oScore.querySelector("p").innerHTML = oScoreContent.oScorePlayer;
+  oScore.querySelector("h4").innerHTML = oScoreContent.oScoreScore;
+  tie.querySelector("h4").textContent = tieContent; // DIALOG
+
+  if (sessionStorage.getItem("dialogBoxStyle")) {
+    var dialogBoxObj = JSON.parse(sessionStorage.getItem("dialogBoxStyle"));
+
+    if (dialogBoxObj.dialogBoxOpen) {
+      dialogBox.show();
+      configurePoppupDialog(dialogBoxObj.type);
+    }
+  } // JAVASCRIPT
 
 
-var dialogBox = document.querySelector("#dialog-box"); // head
+  markObj = JSON.parse(sessionStorage.getItem("mark"));
+  turnObj = JSON.parse(sessionStorage.getItem("turn"));
+  player1Obj = JSON.parse(sessionStorage.getItem("player1"));
+  player2Obj = JSON.parse(sessionStorage.getItem("player2"));
+  cellObjs = JSON.parse(sessionStorage.getItem('cells'));
+  cellsGridObj = JSON.parse(sessionStorage.getItem("cellsGrid"));
+  computerObj = JSON.parse(sessionStorage.getItem("computer"));
+  mark.setProperties = markObj;
+  turn.setProperties = turnObj;
+  player1.setProperties = player1Obj;
+  player2.setProperties = player2Obj;
+  cells.forEach(function (cell, index) {
+    cell.setProperties = cellObjs[index];
+  });
+  cellsGrid.setProperties = cellsGridObj;
+  cellsGrid.addAllCellsClickEvent();
+  computer.setProperties = computerObj;
+} // ============================================================================
+//---------------------------CREATING OBJECTS ---------------------------------
+// ============================================================================
+// creating mark object
 
-var playerWonLost = document.querySelector('#dialog-box #player-won-lost');
-var won = document.querySelector('#dialog-box #won');
-var lost = document.querySelector('#dialog-box #lost'); // main take a round
-
-var iconContainer = document.querySelector("#msg-body .icon-container");
-var takesRound = document.querySelector('#dialog-box #takes-round'); // main Restart and Tied
-
-var restart = document.querySelector('#dialog-box #restart');
-var tied = document.querySelector('#dialog-box #tied'); // foot
-
-var quitCancelBtn = document.querySelector('#dialog-box footer #quit-cancel');
-var roundRestartBtn = document.querySelector('#dialog-box footer #round-restart');
-var type = {
-  first: 'player1-X',
-  second: 'player1-O',
-  third: 'player2-X',
-  fourth: 'player2-O',
-  fifth: 'won-X',
-  sixth: 'won-O',
-  seventh: 'lost-X',
-  eighth: 'lost-O',
-  nineth: 'restart',
-  tenth: 'tied'
-}; // ==========================================================================
-// Initialize
-
-var inBody = document.querySelector("body").innerHTML; // pages
-
-var newGame = document.querySelector('#new-game');
-var start = document.querySelector('#start'); // creating mark object
 
 var mark = new Mark(); // creating player objects
 
 var player1 = new Player();
-var player2 = new Player(); // creating Turn OBJECT
+var player2 = new Player();
+var computer = new Computer(); // creating Turn OBJECT
 
-var turn = new Turn(); // creating cellsGrid OBJECT to group and manage the cells all
+var turn = new Turn(); //Arrays of cell
 
-var cellsGrid = new CellsGrid(); //adding event to choose the player1's mark
+var cells = cellsCreator(); // creating cellsGrid OBJECT to group and manage the cells all
 
-for (var _i2 = 0, _arr2 = [mark.btnX, mark.btnO]; _i2 < _arr2.length; _i2++) {
-  var button = _arr2[_i2];
+var cellsGrid = new CellsGrid(); // ============================================================================
+// --------------------------------------EVENTS--------------------------------
+// ============================================================================
+// Buttons
+//adding event to choose the player1's mark
+
+for (var _i3 = 0, _arr2 = [markBtnX, markBtnO]; _i3 < _arr2.length; _i3++) {
+  var button = _arr2[_i3];
   button.addEventListener('click', function () {
-    console.log("change");
     mark.switch();
-    localStorage.setItem("pageSave", inBody);
+    populateStorage();
   });
-} // Computer constants
+}
 
-
-var COMBINATIONS_MATRIX = [[1, 5, 9], [1, 6, 8], [2, 4, 9], [2, 5, 8], [2, 6, 7], [3, 4, 8], [3, 5, 7], [4, 5, 6]];
-var POSSIBLE_PLAYS = [5, 2, 4, 6, 8, 1, 3, 7, 9]; // CSS Variables
-
-var cssRoot = document.querySelector(":root");
-var cssRootStyle = getComputedStyle(cssRoot); // player vs player addEventListener
-
-var playerVsPlayerButton = document.querySelector('#player1-vs-player2-button');
-var cpuVsPlayerButton = document.querySelector("#cpu-vs-player-button");
-var computer = new Computer();
 playerVsPlayerButton.addEventListener('click', function () {
   // initializing player objects
   player1.mark = mark.p1Mark;
@@ -882,7 +1184,7 @@ playerVsPlayerButton.addEventListener('click', function () {
   newGame.classList.add('not-show-element');
   start.classList.remove('not-show-element');
   cellsGrid.init();
-  localStorage.setItem("pageSave", inBody);
+  populateStorage();
 });
 cpuVsPlayerButton.addEventListener("click", function () {
   player1.mark = mark.p1Mark;
@@ -901,69 +1203,37 @@ cpuVsPlayerButton.addEventListener("click", function () {
     player2.generateClick(computerMove);
   }
 
-  localStorage.setItem("pageSave", inBody);
+  populateStorage();
 }); // dialog events
 
 quitCancelBtn.addEventListener("click", function (e) {
   if (e.target.textContent.toLowerCase() === "quit") {
     // reload the page without creating a history entry
+    sessionStorage.clear();
     window.location.reload();
   } else {
     resetDialog();
     dialogBox.close();
-    localStorage.setItem("pageSave", inBody);
+    populateDialogStorage();
   }
 });
 roundRestartBtn.addEventListener("click", function () {
   restartNewRound();
   resetDialog();
   dialogBox.close();
-  localStorage.setItem("pageSave", inBody);
+  populateDialogStorage();
 });
-var restartBtn = document.getElementById("restart-button");
-
-function restartNewRound() {
-  cellsGrid.resetGrid();
-  turn.reset();
-  player1.reset();
-  player2.reset();
-
-  if (computer) {
-    computer.initialize();
-  }
-
-  restartBtn.setAttribute("disabled", "");
-
-  if (player2.mark === "x") {
-    var computerMove = computer.chooseMove();
-    player2.generateClick(computerMove);
-  }
-}
-
 restartBtn.addEventListener("click", function () {
   configurePoppupDialog("restart");
   dialogBox.show();
-  localStorage.setItem("pageSave", inBody);
-}); // =======================================================================
-// -------------------------WEB STORAGE-----------------------------------
-// =======================================================================
-// window.onload = function () {
-// 	if ( localStorage.getItem( "pageSave" ) ) {
-// 		inBody = localStorage.getItem( "pageSave" )
-// 			.innerHTML;
-// 		// make the browser to render the DOM
-// 		var el = document.getElementById( "fixup" );
-// 		var speed = 10,
-// 			i = 0,
-// 			limit = 1000;
-// 		setTimeout( function loop() {
-// 			el.innerHTML = i++;
-// 			if ( i <= limit ) {
-// 				setTimeout( loop, speed );
-// 			}
-// 		}, speed );
-// 	}
-// }
+  populateDialogStorage();
+}); //session storage events
+
+window.addEventListener("load", function () {
+  if (sessionStorage.length) {
+    setStyle();
+  }
+});
 },{}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -992,7 +1262,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53694" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "62559" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

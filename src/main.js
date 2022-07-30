@@ -1,7 +1,87 @@
+// ============================================================================
+// ---------------------------------CONSTS-------------------------------------
+// ============================================================================
+const COMBINATIONS_MATRIX = [
+	[ 1, 5, 9 ],
+	[ 1, 6, 8 ],
+	[ 2, 4, 9 ],
+	[ 2, 5, 8 ],
+	[ 2, 6, 7 ],
+	[ 3, 4, 8 ],
+	[ 3, 5, 7 ],
+	[ 4, 5, 6 ]
+];
+const POSSIBLE_PLAYS = [ 5, 2, 4, 6, 8, 1, 3, 7, 9 ];
+
+// DOM INTIALIZING
+// page new game
+const newGame = document.querySelector( '#new-game' );
+// choice buttons
+const markBtnO = document.querySelector( '#o-choice-button' );
+const markBtnX = document.querySelector( '#x-choice-button' );
+
+// page start
+const start = document.querySelector( '#start' );
+const cellElements = document.querySelectorAll( "#start #cells > div" );
+const turnIconX = document.querySelector( '.turn .icon-x' );
+const turnIconO = document.querySelector( '.turn .icon-o' );
+const xScore = document.getElementById( "x-score" );
+const oScore = document.getElementById( "o-score" );
+const tie = document.getElementById( "ties" );
+
+// dialog page
+const dialogBox = document.querySelector( "#dialog-box" );
+
+// CSS Variables
+const cssRoot = document.querySelector( ":root" );
+const cssRootStyle = getComputedStyle( cssRoot );
+
+// BUTTONS
+let playerVsPlayerButton = document.querySelector(
+	'#player1-vs-player2-button'
+);
+const cpuVsPlayerButton = document.querySelector( "#cpu-vs-player-button" );
+const restartBtn = document.getElementById( "restart-button" );
+
+// dialog initializing
+// head
+const playerWonLost = document.querySelector( '#dialog-box #player-won-lost' );
+const won = document.querySelector( '#dialog-box #won' );
+const lost = document.querySelector( '#dialog-box #lost' );
+// main take a round
+const iconContainer = document.querySelector( "#msg-body .icon-container" );
+const takesRound = document.querySelector( '#dialog-box #takes-round' );
+// main Restart and Tied
+const restart = document.querySelector( '#dialog-box #restart' );
+const tied = document.querySelector( '#dialog-box #tied' );
+// foot
+const quitCancelBtn = document.querySelector( '#dialog-box footer #quit-cancel' );
+const roundRestartBtn = document.querySelector(
+	'#dialog-box footer #round-restart' );
+
+const type = {
+	first: 'player1-X',
+	second: 'player1-O',
+	third: 'player2-X',
+	fourth: 'player2-O',
+	fifth: 'won-X',
+	sixth: 'won-O',
+	seventh: 'lost-X',
+	eighth: 'lost-O',
+	nineth: 'restart',
+	tenth: 'tied',
+};
+// to sessionStorage use
+let markObj, turnObj, player1Obj, player2Obj, cellsGridObj, computerObj, xScoreContent, oScoreContent;
+let newGameClass, xChoiceButtonClass, oChoiceButtonClass, startClass, turnIconXClass, turnIconOClass, restartBtnClass, cellsClass, tieContent;
+let cellObjs = [];
+// =============================================================================
+// -------------------------------------OBJECTS---------------------------------
+// =============================================================================
 // MARK OBJECT
-const markPrototype = {
+let markPrototype = {
 	updateMark() {
-		if ( this.btnX.classList.contains( 'active-mark-button' ) ) {
+		if ( markBtnX.classList.contains( 'active-mark-button' ) ) {
 			this.p1Mark = 'x';
 			this.p2Mark = 'o';
 		} else {
@@ -10,50 +90,78 @@ const markPrototype = {
 		}
 	},
 	switch () {
-		this.btnX.classList.toggle( 'active-mark-button' );
-		this.btnO.classList.toggle( 'active-mark-button' );
+		markBtnX.classList.toggle( 'active-mark-button' );
+		markBtnO.classList.toggle( 'active-mark-button' );
 		this.updateMark();
 	},
+	get getProperties() {
+		let obj = {
+			p1Mark: this.p1Mark,
+			p2Mark: this.p2Mark
+		}
+		return obj;
+	},
+	set setProperties( obj ) {
+		this.p1Mark = obj.p1Mark;
+		this.p2Mark = obj.p2Mark;
+	}
 };
 // Mark constructor function
 function Mark() {
 	this.p1Mark = 'x';
 	this.p2Mark = 'o';
-	this.btnX = document.querySelector( '#x-choice-button' );
-	this.btnO = document.querySelector( '#o-choice-button' );
 }
 Mark.prototype = markPrototype;
 Mark.prototype.constructor = Mark;
-
-// ==========================================================================
 // PLAYER OBJECT
-const playerPrototype = {
+let playerPrototype = {
 	updateScore() {
 		let scoreString = this.score.toString();
 		if ( this.score < 10 ) {
 			scoreString = '0' + scoreString;
 		}
-		this.scoreCell.querySelector( '.score' )
-			.textContent = scoreString;
+		if ( this.mark === "x" ) {
+			xScore.querySelector( '.score' )
+				.textContent = scoreString;
+		} else {
+			oScore.querySelector( '.score' )
+				.textContent = scoreString;
+		}
+
 	},
 	initializeScore() {
 		if ( this.mark === 'x' ) {
-			this.scoreCell = document.querySelector( '#x-score' );
+			this.scoreCell = xScore;
 		} else {
-			this.scoreCell = document.querySelector( '#o-score' );
+			this.scoreCell = oScore;
 		}
 		this.scoreCell.querySelector( 'p span' )
 			.textContent = this.name;
 	},
 	//For CPU user
 	generateClick( id ) {
-		if ( player2.name === "CPU" ) {
+		if ( player2.name === "CPU" && cellsGrid.totalClicks < 9 ) {
 			document.getElementById( `${id}` )
 				.click();
 		}
 	},
 	reset() {
 		this.track = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
+	},
+	get getProperties() {
+		let obj = {
+			mark: this.mark,
+			name: this.name,
+			score: this.score,
+			track: this.track
+		}
+		return obj;
+	},
+	set setProperties( obj ) {
+		this.mark = obj.mark;
+		this.name = obj.name;
+		this.score = obj.score;
+		this.track = obj.track;
 	}
 };
 
@@ -68,9 +176,8 @@ function Player() {
 Player.prototype = playerPrototype;
 Player.prototype.constructor = Player;
 
-// ==============================================================================
 // TURN OBJECT
-const turnPrototype = {
+let turnPrototype = {
 	switch () {
 		let thirdRecipe;
 		thirdRecipe = this.currentTurn;
@@ -79,59 +186,90 @@ const turnPrototype = {
 		this.show();
 	},
 	show() {
-		let markPrevious = this.previousTurn.toUpperCase();
-		let markCurrent = this.currentTurn.toUpperCase();
-		this[ 'icon' + markCurrent ].classList.remove( 'not-show-element' );
-		this[ 'icon' + markPrevious ].classList.add( 'not-show-element' );
+		let markPrevious = this.previousTurn;
+		let markCurrent = this.currentTurn;
+		turnIconO.classList.remove( 'not-show-element' );
+		turnIconX.classList.add( 'not-show-element' );
+		if ( markCurrent === "x" ) {
+			turnIconX.classList.remove( 'not-show-element' );
+			turnIconO.classList.add( 'not-show-element' );
+		}
+
 	},
 	reset() {
 		this.currentTurn = 'x';
 		this.previousTurn = 'o';
 		this.show();
 	},
+	get getProperties() {
+		let obj = {
+			currentTurn: this.currentTurn,
+			previousTurn: this.previousTurn
+		}
+		return obj;
+	},
+	set setProperties( obj ) {
+		this.currentTurn = obj.currentTurn;
+		this.previousTurn = obj.previousTurn;
+	}
 };
 
 function Turn() {
 	this.currentTurn = 'x';
 	this.previousTurn = 'o';
-	this.iconX = document.querySelector( '.turn .icon-x' );
-	this.iconO = document.querySelector( '.turn .icon-o' );
 }
 Turn.prototype = turnPrototype;
 Turn.prototype.constructor = Turn;
 
-// ============================================================================
 // CELL OBJECT
 const cellPrototype = {
 	markAsWinner() {
-		this.element.classList.add( `cell-background-win-${this.marked}` )
+		document.getElementById( this.id )
+			.classList.add( `cell-background-win-${this.marked}` )
 	},
 
 	addClickEvent() {
 		this.clickEventHandler = this.clickEventHandler.bind( this );
-		this.element.addEventListener( "click", this.clickEventHandler, false );
+		if ( !this.marked ) {
+			document.getElementById( this.id )
+				.addEventListener( "click", this.clickEventHandler, false );
+		}
+
 	},
 	removeClickEvent() {
-		this.element.removeEventListener( "click", this.clickEventHandler, false );
+		document.getElementById( this.id )
+			.removeEventListener( "click", this.clickEventHandler, false );
 	},
 	resetCell() {
+		this.marked = "";
 		this.addClickEvent();
 		this.resetCellBackground();
-		this.marked = "";
 	},
 	resetCellBackground() {
-		this.element.removeAttribute( "class" );
+		document.getElementById( this.id )
+			.removeAttribute( "class" );
 	},
 	showCellMark( mark ) {
-		this.element.classList.add( `cell-background-${this.marked}` );
+		document.getElementById( this.id )
+			.classList.add( `cell-background-${this.marked}` );
 
 	},
+	get getProperties() {
+		let obj = {
+			marked: this.marked,
+			id: this.id
+		}
+		return obj;
+	},
+	set setProperties( obj ) {
+		this.marked = obj.marked;
+		this.id = obj.id;
+	}
 };
 
-function Cell( id, element ) {
+function Cell( id ) {
 	this.marked = "";
 	this.id = id;
-	this.element = element;
 	this.clickEventHandler = function ( event ) {
 		event.stopPropagation();
 		event.preventDefault();
@@ -140,18 +278,19 @@ function Cell( id, element ) {
 			this.marked = turn.currentTurn;
 			restartBtn.removeAttribute( "disabled" );
 			this.showCellMark();
-			cellsGrid.clickCentinel( this.marked, this.playerName, Number( this.id ) )
+			cellsGrid.clickCentinel( this.marked, this.playerName, this.id )
 			this.removeClickEvent();
 			if ( player2.name === "CPU" ) {
 				computer.anotate();
 			}
 			turn.switch();
-		}
-		// managing computer move
-		if ( player2.name === "CPU" ) {
-			if ( computer.isItMyTurn() ) {
-				let computerMove = computer.chooseMove();
-				player2.generateClick( computerMove );
+			populateStorage();
+			// managing computer move
+			if ( player2.name === "CPU" ) {
+				if ( computer.isItMyTurn() ) {
+					let computerMove = computer.chooseMove();
+					player2.generateClick( computerMove );
+				}
 			}
 		}
 	}
@@ -159,33 +298,39 @@ function Cell( id, element ) {
 Cell.prototype = cellPrototype;
 Cell.prototype.constructor = Cell;
 
-// ===========================================================================
 // CELLSGRID OBJECT
 const cellsGridPrototype = {
-	init() {
-		let cellArrayPosition;
-		const cellElements = document.querySelectorAll( "#start #cells > div" );
-		for ( [ key, cellElement ] of cellElements.entries() ) {
-			const cell = new Cell( cellElement.id, cellElement );
+
+	addAllCellsClickEvent() {
+		for ( cell of cells ) {
 			cell.addClickEvent();
-			cellArrayPosition = Number( cellElement.id ) - 1;
-			this.cells.splice( cellArrayPosition, 1, cell );
 		}
 	},
+
+	removeCellsClick() {
+		for ( cell of cells ) {
+			cell.removeClickEvent();
+		}
+	},
+
+	init() {
+		this.addAllCellsClickEvent();
+	},
+
 	clickCentinel( mark, name, cellId ) {
 		this.totalClicks++
 		this.allCellsId.push( cellId );
-
+		var cellIdNumber = Number( cellId );
 		// update players track arrays
 		if ( mark === player1.mark ) {
 			this.combinations.forEach( ( e, i ) => {
-				if ( e.includes( cellId ) ) {
+				if ( e.includes( cellIdNumber ) ) {
 					player1.track[ i ]++;
 				}
 			} );
 		} else if ( mark === player2.mark ) {
 			this.combinations.forEach( ( e, i ) => {
-				if ( e.includes( cellId ) ) {
+				if ( e.includes( cellIdNumber ) ) {
 					player2.track[ i ]++;
 				}
 			} );
@@ -199,19 +344,25 @@ const cellsGridPrototype = {
 		}
 		this.winnerCentinel();
 	},
+
 	winnerCentinel() {
-		let player1TrackIndex = player1.track.includes( 3 ) ? player1.track.findIndex( ( x ) => x === 3 ) : false;
-		let player2TrackIndex = player2.track.includes( 3 ) ? player2.track.findIndex( ( x ) => x === 3 ) : false;
+		let player1TrackIndex = player1.track.includes( 3 ) ?
+			player1.track.findIndex( ( x ) => x === 3 ) : false;
+
+		let player2TrackIndex = player2.track.includes( 3 ) ?
+			player2.track.findIndex( ( x ) => x === 3 ) : false;
+
 		let tiedGame = !this.tiesTrack()
 			.includes( 0 );
-		if ( player1TrackIndex ) {
+
+		if ( player1TrackIndex || player1TrackIndex === 0 ) {
 			this.won.playerName = player1.name;
 			this.won.mark = player1.mark;
 			this.won.cellsId = this.combinations[ player1TrackIndex ];
 			player1.score++;
 			this.summary( this.won )
 			return;
-		} else if ( player2TrackIndex ) {
+		} else if ( player2TrackIndex || player2TrackIndex === 0 ) {
 			this.won.playerName = player2.name;
 			this.won.mark = player2.mark;
 			this.won.cellsId = this.combinations[ player2TrackIndex ];
@@ -225,13 +376,16 @@ const cellsGridPrototype = {
 			return;
 		}
 	},
+
 	summary( winnerData ) {
 		this.markWinnerCells( this.won.cellsId );
 		this.UpdateScore();
 		this.removeCellsClick();
 		dialogBox.show();
 		this.showDialog();
+		populateDialogStorage();
 	},
+
 	UpdateScore() {
 		let player = this.won.playerName;
 		switch ( player ) {
@@ -242,7 +396,7 @@ const cellsGridPrototype = {
 			player2.updateScore();
 			break;
 		case "none":
-			const tieScoreSlot = document.querySelector( "#start #ties" )
+			let tieScoreSlot = document.querySelector( "#start #ties" )
 			let scoreString = this.tiesScore.toString();
 			if ( this.tiesScore < 10 ) {
 				scoreString = '0' + scoreString;
@@ -252,6 +406,7 @@ const cellsGridPrototype = {
 			break;
 		}
 	},
+
 	showDialog() {
 		let mark = this.won.mark;
 		let player = this.won.playerName;
@@ -292,7 +447,7 @@ const cellsGridPrototype = {
 	},
 
 	resetGrid() {
-		for ( cellElement of this.cells ) {
+		for ( cellElement of cells ) {
 			cellElement.resetCell();
 		}
 		this.won.cellsId = [];
@@ -302,20 +457,31 @@ const cellsGridPrototype = {
 		this.allCellsId = [];
 		this.tiesTrack = [ 0, 0, 0, 0, 0, 0, 0, 0 ];
 	},
+
 	markWinnerCells( cellsIds ) {
 		for ( cellId of cellsIds ) {
 			let pos = cellId - 1;
-			this.cells[ pos ].markAsWinner();
+			cells[ pos ].markAsWinner();
 		}
 	},
 
-	removeCellsClick() {
-		for ( cell of cellsGrid.cells ) {
-			cell.removeClickEvent();
+	get getProperties() {
+		let obj = {
+			won: this.won,
+			totalClicks: this.totalClicks,
+			tiesScore: this.tiesScore,
+			allCellsId: this.allCellsId,
+			tiesTrack: this.tiesTrack,
 		}
+		return obj;
 	},
-	updateRecord() {
 
+	set setProperties( obj ) {
+		this.won = obj.won;
+		this.totalClicks = obj.totalClicks;
+		this.tiesScore = obj.tiesScore;
+		this.allCellsId = obj.allCellsId;
+		this.tiesTrack = obj.tiesTrack;
 	}
 };
 
@@ -325,7 +491,6 @@ function CellsGrid() {
 		cellsId: [],
 		mark: ""
 	};
-	this.cells = [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
 	this.totalClicks = 0;
 	this.tiesScore = 0;
 	this.allCellsId = [];
@@ -345,7 +510,6 @@ function CellsGrid() {
 CellsGrid.prototype = cellsGridPrototype;
 CellsGrid.prototype.constructor = CellsGrid;
 
-// =====================================================================
 // COMPUTER OBJECT
 computerPrototype = {
 	initialize() {
@@ -356,21 +520,6 @@ computerPrototype = {
 		let cellClicked = Number( cellsGrid.allCellsId[ cellsGrid.allCellsId.length - 1 ] );
 		var index = this.possiblePlays.findIndex( ( x ) => x === cellClicked );
 		this.possiblePlays.splice( index, 1 );
-
-		// // keeping track of the combinations used for each player
-		// if ( !this.isItMyTurn() ) {
-		// 	this.combinations.forEach( ( e, i ) => {
-		// 		if ( e.includes( cellClicked ) ) {
-		// 			this.playerTrackArray[ i ]++;
-		// 		}
-		// 	} );
-		// } else {
-		// 	this.combinations.forEach( ( e, i ) => {
-		// 		if ( e.includes( cellClicked ) ) {
-		// 			this.computerTrackArray[ i ]++;
-		// 		}
-		// 	} );
-		// }
 	},
 	// Analize the options and return the chosen move
 	chooseMove() {
@@ -395,7 +544,7 @@ computerPrototype = {
 				}
 			}
 
-		} else if ( playerHaveHalfEmptyCombs || playerHaveEmptyCombs === 0 ) {
+		} else if ( playerHaveHalfEmptyCombs || playerHaveHalfEmptyCombs === 0 ) {
 
 			for ( let element of this.possiblePlays ) {
 				if ( cellsGrid.combinations[ playerHaveHalfEmptyCombs ].includes( element ) ) {
@@ -411,7 +560,7 @@ computerPrototype = {
 				}
 			}
 
-		} else {
+		} else if ( this.possiblePlays.length ) {
 			return computer.takeFirstOpt();
 		}
 	},
@@ -460,6 +609,12 @@ computerPrototype = {
 	},
 	takeFirstOpt() {
 		return this.possiblePlays[ 0 ];
+	},
+	get getProperties() {
+		return this.possiblePlays;
+	},
+	set setProperties( arr ) {
+		this.possiblePlays = arr;
 	}
 };
 
@@ -469,7 +624,11 @@ function Computer() {
 
 Computer.prototype = computerPrototype;
 Computer.prototype.constructor = Computer;
-// ==========================================================================
+
+
+// ============================================================================
+// --------------------------------FUNCTIONS-----------------------------------
+// ============================================================================
 // DIALOG
 function configurePoppupDialog( kind ) {
 	switch ( kind ) {
@@ -561,97 +720,217 @@ function configurePoppupDialog( kind ) {
 		roundRestartBtn.querySelector( 'h5' )
 			.textContent = 'next round';
 	};
-	localStorage.setItem( "pageSave", inBody );
+	dialogBox.setAttribute( "data-type", kind );
 }
 
 function resetDialog() {
-	const dialogElemList = document.querySelectorAll( "#dialog-box p, #dialog-box h3, #dialog-box svg" );
+	let dialogElemList = document.querySelectorAll( "#dialog-box p, #dialog-box h3, #dialog-box svg" );
 	for ( let [ key, entrie ] of dialogElemList.entries() ) {
 		entrie.classList.add( 'not-show-element' );
 	};
 	iconContainer.classList.remove( 'not-show-element' );
 }
-// dialog initializing
-const dialogBox = document.querySelector( "#dialog-box" );
-// head
-const playerWonLost = document.querySelector( '#dialog-box #player-won-lost' );
-const won = document.querySelector( '#dialog-box #won' );
-const lost = document.querySelector( '#dialog-box #lost' );
-// main take a round
-const iconContainer = document.querySelector( "#msg-body .icon-container" );
-const takesRound = document.querySelector( '#dialog-box #takes-round' );
-// main Restart and Tied
-const restart = document.querySelector( '#dialog-box #restart' );
-const tied = document.querySelector( '#dialog-box #tied' );
-// foot
-const quitCancelBtn = document.querySelector( '#dialog-box footer #quit-cancel' );
-const roundRestartBtn = document.querySelector(
-	'#dialog-box footer #round-restart' );
 
-const type = {
-	first: 'player1-X',
-	second: 'player1-O',
-	third: 'player2-X',
-	fourth: 'player2-O',
-	fifth: 'won-X',
-	sixth: 'won-O',
-	seventh: 'lost-X',
-	eighth: 'lost-O',
-	nineth: 'restart',
-	tenth: 'tied',
+function restartNewRound() {
+	cellsGrid.resetGrid();
+	turn.reset();
+	player1.reset();
+	player2.reset();
+	if ( player2.name === "CPU" ) {
+		computer.initialize();
+	}
+	restartBtn.setAttribute( "disabled", "" );
+	populateStorage();
+	if ( player2.mark === "x" && player2.name === 'CPU' ) {
+		let computerMove = computer.chooseMove();
+		player2.generateClick( computerMove );
+	}
+}
+
+function cellsCreator() {
+	let cellsArray = [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ];
+	let cellPosition;
+	for ( [ cellElementKey, cellElement ] of cellElements.entries() ) {
+		var cell = new Cell( cellElement.id, cellElement );
+		cellPosition = Number( cellElement.id ) - 1;
+		cellsArray.splice( cellPosition, 1, cell );
+	}
+	return cellsArray
 };
 
-// ==========================================================================
-// Initialize
-let inBody = document.querySelector( "body" )
-	.innerHTML;
-// pages
-const newGame = document.querySelector( '#new-game' );
-const start = document.querySelector( '#start' );
+// ------------------------------session storage functions----------------------
+function populateStorage() {
+
+	// HTML
+	// new Game
+	newGameClass = newGame.getAttribute( "class" );
+	sessionStorage.setItem( "new-game", newGameClass );
+	xChoiceButtonClass = markBtnX.getAttribute( "class" );
+	oChoiceButtonClass = markBtnO.getAttribute( "class" );
+	sessionStorage.setItem( "x-choice-button", xChoiceButtonClass );
+	sessionStorage.setItem( "o-choice-button", oChoiceButtonClass );
+
+	// start
+	startClass = start.getAttribute( "class" );
+	sessionStorage.setItem( "start", startClass );
+	turnIconXClass = turnIconX.getAttribute( "class" );
+	turnIconOClass = turnIconO.getAttribute( "class" );
+	sessionStorage.setItem( "turnIconX", turnIconXClass );
+	sessionStorage.setItem( "turnIconO", turnIconOClass );
+	restartBtnClass = restartBtn.getAttribute( "class" );
+	sessionStorage.setItem( "restart-btn", restartBtnClass );
+	cellsClass = {};
+	for ( cell of cells ) {
+		if ( cell ) {
+			cellsClass[ cell.id ] = document.getElementById( cell.id )
+				.getAttribute( "class" );
+		}
+	}
+	sessionStorage.setItem( "cellsClassObj", JSON.stringify( cellsClass ) );
+
+	xScoreContent = {
+		xScorePlayer: xScore.querySelector( "p" )
+			.innerHTML,
+		xScoreScore: xScore.querySelector( "h4" )
+			.innerHTML
+	};
+	oScoreContent = {
+		oScorePlayer: oScore.querySelector( "p" )
+			.innerHTML,
+		oScoreScore: oScore.querySelector( "h4" )
+			.innerHTML
+	};
+	tieContent = tie.querySelector( "h4" )
+		.textContent;
+	sessionStorage.setItem( "xScoreContentObj", JSON.stringify( xScoreContent ) );
+	sessionStorage.setItem( "oScoreContentObj", JSON.stringify( oScoreContent ) );
+	sessionStorage.setItem( "tieContent", tieContent );
+
+	// GETTING JAVASCRIPT OBJECTS
+	markObj = mark.getProperties;
+	turnObj = turn.getProperties;
+	player1Obj = player1.getProperties;
+	player2Obj = player2.getProperties;
+	cellObjs.length = 0;
+	for ( cell of cells ) {
+		cellObjs.push( cell.getProperties )
+	}
+	cellsGridObj = cellsGrid.getProperties;
+	computerObj = computer.getProperties;
+
+	sessionStorage.setItem( "mark", JSON.stringify( markObj ) );
+	sessionStorage.setItem( "turn", JSON.stringify( turnObj ) );
+	sessionStorage.setItem( "player1", JSON.stringify( player1Obj ) );
+	sessionStorage.setItem( "player2", JSON.stringify( player2Obj ) );
+	sessionStorage.setItem( "cells", JSON.stringify( cellObjs ) );
+	sessionStorage.setItem( "cellsGrid", JSON.stringify( cellsGridObj ) );
+	sessionStorage.setItem( "computer", JSON.stringify( computerObj ) );
+}
+
+function populateDialogStorage() {
+	var dialogBoxObj = {
+		dialogBoxOpen: dialogBox.hasAttribute( "open" ),
+		type: dialogBox.dataset.type
+	};
+	sessionStorage.setItem( "dialogBoxStyle", JSON.stringify( dialogBoxObj ) );
+}
+
+function setStyle() {
+	// new game
+	newGameClass = sessionStorage.getItem( "new-game" );
+	newGame.setAttribute( "class", newGameClass );
+	xChoiceButtonClass = sessionStorage.getItem( "x-choice-button" );
+	markBtnX.setAttribute( "class", xChoiceButtonClass );
+	oChoiceButtonClass = sessionStorage.getItem( "o-choice-button" );
+	markBtnO.setAttribute( "class", oChoiceButtonClass );
+
+	// start
+	startClass = sessionStorage.getItem( "start" );
+	start.setAttribute( "class", startClass );
+	turnIconXClass = sessionStorage.getItem( "turnIconX" );
+	turnIconX.setAttribute( "class", turnIconXClass );
+	turnIconOClass = sessionStorage.getItem( "turnIconO" );
+	turnIconO.setAttribute( "class", turnIconOClass );
+	restartBtnClass = sessionStorage.getItem( "restart-btn" );
+	restartBtn.setAttribute( "class", restartBtnClass );
+	cellsClass = JSON.parse( sessionStorage.getItem( "cellsClassObj" ) );
+	if ( cellsClass ) {
+		for ( [ key, value ] of Object.entries( cellsClass ) ) {
+			document.getElementById( key )
+				.setAttribute( 'class', value );
+		}
+	}
+	xScoreContent = JSON.parse( sessionStorage.getItem( "xScoreContentObj" ) );
+	oScoreContent = JSON.parse( sessionStorage.getItem( "oScoreContentObj" ) );
+	tieContent = sessionStorage.getItem( "tieContent" );
+	xScore.querySelector( "p" )
+		.innerHTML = xScoreContent.xScorePlayer;
+	xScore.querySelector( "h4" )
+		.innerHTML = xScoreContent.xScoreScore;
+
+	oScore.querySelector( "p" )
+		.innerHTML = oScoreContent.oScorePlayer;
+	oScore.querySelector( "h4" )
+		.innerHTML = oScoreContent.oScoreScore;
+
+	tie.querySelector( "h4" )
+		.textContent = tieContent;
+
+	// DIALOG
+	if ( sessionStorage.getItem( "dialogBoxStyle" ) ) {
+		var dialogBoxObj = JSON.parse( sessionStorage.getItem( "dialogBoxStyle" ) );
+		if ( dialogBoxObj.dialogBoxOpen ) {
+			dialogBox.show();
+			configurePoppupDialog( dialogBoxObj.type );
+		}
+	}
+	// JAVASCRIPT
+	markObj = JSON.parse( sessionStorage.getItem( "mark" ) );
+	turnObj = JSON.parse( sessionStorage.getItem( "turn" ) );
+	player1Obj = JSON.parse( sessionStorage.getItem( "player1" ) );
+	player2Obj = JSON.parse( sessionStorage.getItem( "player2" ) );
+	cellObjs = JSON.parse( sessionStorage.getItem( 'cells' ) );
+	cellsGridObj = JSON.parse( sessionStorage.getItem( "cellsGrid" ) );
+	computerObj = JSON.parse( sessionStorage.getItem( "computer" ) );
+
+	mark.setProperties = markObj;
+	turn.setProperties = turnObj;
+	player1.setProperties = player1Obj;
+	player2.setProperties = player2Obj;
+	cells.forEach( ( cell, index ) => {
+		cell.setProperties = cellObjs[ index ];
+	} );
+	cellsGrid.setProperties = cellsGridObj
+	cellsGrid.addAllCellsClickEvent();
+	computer.setProperties = computerObj;
+}
+
+// ============================================================================
+//---------------------------CREATING OBJECTS ---------------------------------
+// ============================================================================
 // creating mark object
 const mark = new Mark();
 // creating player objects
 const player1 = new Player();
 const player2 = new Player();
+const computer = new Computer();
 // creating Turn OBJECT
 const turn = new Turn();
+//Arrays of cell
+const cells = cellsCreator();
 // creating cellsGrid OBJECT to group and manage the cells all
 const cellsGrid = new CellsGrid();
+// ============================================================================
+// --------------------------------------EVENTS--------------------------------
+// ============================================================================
+// Buttons
 //adding event to choose the player1's mark
-for ( let button of [ mark.btnX, mark.btnO ] ) {
+for ( let button of [ markBtnX, markBtnO ] ) {
 	button.addEventListener( 'click', () => {
-		console.log( "change" );
 		mark.switch();
-		localStorage.setItem( "pageSave", inBody )
+		populateStorage();
 	} );
 }
-
-// Computer constants
-const COMBINATIONS_MATRIX = [
-	[ 1, 5, 9 ],
-	[ 1, 6, 8 ],
-	[ 2, 4, 9 ],
-	[ 2, 5, 8 ],
-	[ 2, 6, 7 ],
-	[ 3, 4, 8 ],
-	[ 3, 5, 7 ],
-	[ 4, 5, 6 ]
-];
-const POSSIBLE_PLAYS = [ 5, 2, 4, 6, 8, 1, 3, 7, 9 ];
-
-// CSS Variables
-let cssRoot = document.querySelector( ":root" );
-let cssRootStyle = getComputedStyle( cssRoot );
-
-// player vs player addEventListener
-const playerVsPlayerButton = document.querySelector(
-	'#player1-vs-player2-button'
-);
-
-const cpuVsPlayerButton = document.querySelector( "#cpu-vs-player-button" );
-
-const computer = new Computer();
-
 playerVsPlayerButton.addEventListener( 'click', function () {
 	// initializing player objects
 	player1.mark = mark.p1Mark;
@@ -663,7 +942,7 @@ playerVsPlayerButton.addEventListener( 'click', function () {
 	newGame.classList.add( 'not-show-element' );
 	start.classList.remove( 'not-show-element' );
 	cellsGrid.init();
-	localStorage.setItem( "pageSave", inBody );
+	populateStorage();
 } );
 cpuVsPlayerButton.addEventListener( "click", function () {
 	player1.mark = mark.p1Mark;
@@ -680,64 +959,36 @@ cpuVsPlayerButton.addEventListener( "click", function () {
 		let computerMove = computer.chooseMove();
 		player2.generateClick( computerMove );
 	}
-	localStorage.setItem( "pageSave", inBody );
+	populateStorage();
 } );
+
 // dialog events
 quitCancelBtn.addEventListener( "click", ( e ) => {
 	if ( e.target.textContent.toLowerCase() === "quit" ) {
 		// reload the page without creating a history entry
+		sessionStorage.clear();
 		window.location.reload();
 	} else {
 		resetDialog();
 		dialogBox.close();
-		localStorage.setItem( "pageSave", inBody );
+		populateDialogStorage();
 	}
 } );
 roundRestartBtn.addEventListener( "click", () => {
 	restartNewRound();
 	resetDialog();
 	dialogBox.close();
-	localStorage.setItem( "pageSave", inBody );
-} )
-const restartBtn = document.getElementById( "restart-button" );
-
-function restartNewRound() {
-	cellsGrid.resetGrid();
-	turn.reset();
-	player1.reset();
-	player2.reset();
-	if ( computer ) {
-		computer.initialize();
-	}
-	restartBtn.setAttribute( "disabled", "" );
-	if ( player2.mark === "x" ) {
-		let computerMove = computer.chooseMove();
-		player2.generateClick( computerMove );
-	}
-}
+	populateDialogStorage();
+} );
 restartBtn.addEventListener( "click", () => {
 	configurePoppupDialog( "restart" )
 	dialogBox.show();
-	localStorage.setItem( "pageSave", inBody );
+	populateDialogStorage();
 } );
 
-// =======================================================================
-// -------------------------WEB STORAGE-----------------------------------
-// =======================================================================
-// window.onload = function () {
-// 	if ( localStorage.getItem( "pageSave" ) ) {
-// 		inBody = localStorage.getItem( "pageSave" )
-// 			.innerHTML;
-// 		// make the browser to render the DOM
-// 		var el = document.getElementById( "fixup" );
-// 		var speed = 10,
-// 			i = 0,
-// 			limit = 1000;
-// 		setTimeout( function loop() {
-// 			el.innerHTML = i++;
-// 			if ( i <= limit ) {
-// 				setTimeout( loop, speed );
-// 			}
-// 		}, speed );
-// 	}
-// }
+//session storage events
+window.addEventListener( "load", () => {
+	if ( sessionStorage.length ) {
+		setStyle();
+	}
+} );
