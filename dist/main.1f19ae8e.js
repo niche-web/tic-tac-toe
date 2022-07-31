@@ -166,7 +166,7 @@ var playerWonLost = document.querySelector('#dialog-box #player-won-lost');
 var won = document.querySelector('#dialog-box #won');
 var lost = document.querySelector('#dialog-box #lost'); // main take a round
 
-var iconContainer = document.querySelector("#msg-body .icon-container");
+var iconContainer = document.querySelector("#msg-body #msg-icon-container");
 var takesRound = document.querySelector('#dialog-box #takes-round'); // main Restart and Tied
 
 var restart = document.querySelector('#dialog-box #restart');
@@ -832,7 +832,7 @@ function configurePoppupDialog(kind) {
     case type.first:
       playerWonLost.classList.remove('not-show-element');
       playerWonLost.querySelector('.player-number').textContent = "1";
-      iconContainer.classList.add("msg-background-x");
+      iconContainer.setAttribute("class", "msg-background-x");
       takesRound.classList.remove('not-show-element');
       takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
       break;
@@ -840,7 +840,7 @@ function configurePoppupDialog(kind) {
     case type.second:
       playerWonLost.classList.remove('not-show-element');
       playerWonLost.querySelector('.player-number').textContent = "1";
-      iconContainer.classList.add('msg-background-o');
+      iconContainer.setAttribute('class', 'msg-background-o');
       takesRound.classList.remove('not-show-element');
       takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
       break;
@@ -849,7 +849,7 @@ function configurePoppupDialog(kind) {
     case type.third:
       playerWonLost.classList.remove('not-show-element');
       playerWonLost.querySelector('.player-number').textContent = "2";
-      iconContainer.classList.add("msg-background-x");
+      iconContainer.setAttribute("class", "msg-background-x");
       takesRound.classList.remove('not-show-element');
       takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
       break;
@@ -857,46 +857,46 @@ function configurePoppupDialog(kind) {
     case type.fourth:
       playerWonLost.classList.remove('not-show-element');
       playerWonLost.querySelector('.player-number').textContent = "2";
-      iconContainer.classList.add('msg-background-o');
+      iconContainer.setAttribute('class', 'msg-background-o');
       takesRound.classList.remove('not-show-element');
       takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
       break;
 
     case type.fifth:
       won.classList.remove('not-show-element');
-      iconContainer.classList.add('msg-background-x');
+      iconContainer.setAttribute("class", "msg-background-x");
       takesRound.classList.remove('not-show-element');
       takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
       break;
 
     case type.sixth:
       won.classList.remove('not-show-element');
-      iconContainer.classList.add('msg-background-o');
+      iconContainer.setAttribute('class', 'msg-background-o');
       takesRound.classList.remove('not-show-element');
       takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
       break;
 
     case type.seventh:
       lost.classList.remove('not-show-element');
-      iconContainer.classList.add('msg-background-x');
+      iconContainer.setAttribute("class", "msg-background-x");
       takesRound.classList.remove('not-show-element');
       takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
       break;
 
     case type.eighth:
       lost.classList.remove('not-show-element');
-      iconContainer.classList.add('msg-background-o');
+      iconContainer.setAttribute('class', 'msg-background-o');
       takesRound.classList.remove('not-show-element');
       takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
       break;
 
     case type.nineth:
-      iconContainer.classList.add('not-show-element');
+      iconContainer.setAttribute("class", 'not-show-element');
       restart.classList.remove('not-show-element');
       break;
 
     case type.tenth:
-      iconContainer.classList.add('not-show-element');
+      iconContainer.setAttribute("class", 'not-show-element');
       tied.classList.remove('not-show-element');
       break;
   }
@@ -938,7 +938,7 @@ function resetDialog() {
   }
 
   ;
-  iconContainer.classList.remove('not-show-element');
+  iconContainer.setAttribute("class", "");
 }
 
 function restartNewRound() {
@@ -1262,7 +1262,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "62559" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54879" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

@@ -16,10 +16,10 @@ const POSSIBLE_PLAYS = [ 5, 2, 4, 6, 8, 1, 3, 7, 9 ];
 // DOM INTIALIZING
 // page new game
 const newGame = document.querySelector( '#new-game' );
+
 // choice buttons
 const markBtnO = document.querySelector( '#o-choice-button' );
 const markBtnX = document.querySelector( '#x-choice-button' );
-
 // page start
 const start = document.querySelector( '#start' );
 const cellElements = document.querySelectorAll( "#start #cells > div" );
@@ -49,7 +49,7 @@ const playerWonLost = document.querySelector( '#dialog-box #player-won-lost' );
 const won = document.querySelector( '#dialog-box #won' );
 const lost = document.querySelector( '#dialog-box #lost' );
 // main take a round
-const iconContainer = document.querySelector( "#msg-body .icon-container" );
+const iconContainer = document.querySelector( "#msg-body #msg-icon-container" );
 const takesRound = document.querySelector( '#dialog-box #takes-round' );
 // main Restart and Tied
 const restart = document.querySelector( '#dialog-box #restart' );
@@ -636,7 +636,7 @@ function configurePoppupDialog( kind ) {
 		playerWonLost.classList.remove( 'not-show-element' );
 		playerWonLost.querySelector( '.player-number' )
 			.textContent = "1";
-		iconContainer.classList.add( "msg-background-x" )
+		iconContainer.setAttribute( "class", "msg-background-x" );
 		takesRound.classList.remove( 'not-show-element' );
 		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
 		break;
@@ -644,7 +644,7 @@ function configurePoppupDialog( kind ) {
 		playerWonLost.classList.remove( 'not-show-element' );
 		playerWonLost.querySelector( '.player-number' )
 			.textContent = "1";
-		iconContainer.classList.add( 'msg-background-o' );
+		iconContainer.setAttribute( 'class', 'msg-background-o' );
 		takesRound.classList.remove( 'not-show-element' );
 		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
 		break;
@@ -653,7 +653,7 @@ function configurePoppupDialog( kind ) {
 		playerWonLost.classList.remove( 'not-show-element' );
 		playerWonLost.querySelector( '.player-number' )
 			.textContent = "2";
-		iconContainer.classList.add( "msg-background-x" )
+		iconContainer.setAttribute( "class", "msg-background-x" );
 		takesRound.classList.remove( 'not-show-element' );
 		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
 		break;
@@ -661,40 +661,40 @@ function configurePoppupDialog( kind ) {
 		playerWonLost.classList.remove( 'not-show-element' );
 		playerWonLost.querySelector( '.player-number' )
 			.textContent = "2";
-		iconContainer.classList.add( 'msg-background-o' );
+		iconContainer.setAttribute( 'class', 'msg-background-o' );
 		takesRound.classList.remove( 'not-show-element' );
 		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
 		break;
 	case type.fifth:
 		won.classList.remove( 'not-show-element' );
-		iconContainer.classList.add( 'msg-background-x' );
+		iconContainer.setAttribute( "class", "msg-background-x" );
 		takesRound.classList.remove( 'not-show-element' );
 		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
 		break;
 	case type.sixth:
 		won.classList.remove( 'not-show-element' );
-		iconContainer.classList.add( 'msg-background-o' );
+		iconContainer.setAttribute( 'class', 'msg-background-o' );
 		takesRound.classList.remove( 'not-show-element' );
 		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
 		break;
 	case type.seventh:
 		lost.classList.remove( 'not-show-element' );
-		iconContainer.classList.add( 'msg-background-x' );
+		iconContainer.setAttribute( "class", "msg-background-x" );
 		takesRound.classList.remove( 'not-show-element' );
 		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
 		break;
 	case type.eighth:
 		lost.classList.remove( 'not-show-element' );
-		iconContainer.classList.add( 'msg-background-o' );
+		iconContainer.setAttribute( 'class', 'msg-background-o' );
 		takesRound.classList.remove( 'not-show-element' );
 		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
 		break;
 	case type.nineth:
-		iconContainer.classList.add( 'not-show-element' );
+		iconContainer.setAttribute( "class", 'not-show-element' );
 		restart.classList.remove( 'not-show-element' );
 		break;
 	case type.tenth:
-		iconContainer.classList.add( 'not-show-element' );
+		iconContainer.setAttribute( "class", 'not-show-element' );
 		tied.classList.remove( 'not-show-element' );
 		break;
 	}
@@ -728,7 +728,7 @@ function resetDialog() {
 	for ( let [ key, entrie ] of dialogElemList.entries() ) {
 		entrie.classList.add( 'not-show-element' );
 	};
-	iconContainer.classList.remove( 'not-show-element' );
+	iconContainer.setAttribute( "class", "" );
 }
 
 function restartNewRound() {

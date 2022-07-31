@@ -39,6 +39,11 @@ button {
   border: none;
 }
 
+button:focus {
+  border: none;
+  outline: none;
+}
+
 button:disabled {
   opacity: 0.3;
 }
@@ -451,7 +456,7 @@ body {
   margin-bottom: 24px;
 }
 
-#msg-body .icon-container {
+#msg-body #msg-icon-container {
   width: 28px;
   height: 28px;
   margin-right: 8px;
@@ -595,7 +600,7 @@ body {
     margin-bottom: 31px;
   }
 
-  #msg-body .icon-container {
+  #msg-body #msg-icon-container {
     width: 64px;
     height: 64px;
     margin-right: 24px;
