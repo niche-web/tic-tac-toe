@@ -49,7 +49,7 @@ button:disabled {
 }
 
 /* :hover */
-@media (hover: hover) {
+@media (hover: hover) and (pointer: fine) {
   .bg-yellow:hover {
     background: var(--light-yellow-hover);
   }
@@ -67,6 +67,20 @@ button:disabled {
     width: 100%;
     height: 100%;
     background-color: var(--dark-orange);
+  }
+
+  .cell-background-x:hover {
+    background-image: url("assets/icon-x-outline.svg");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 40px;
+  }
+
+  .cell-background-o:hover {
+    background-image: url("assets/icon-o-outline.svg");
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 40px;
   }
 }
 
@@ -226,13 +240,6 @@ html {
   background-size: 40px;
 }
 
-.cell-background-x:hover {
-  background-image: url("assets/icon-x-outline.svg");
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: 40px;
-}
-
 .cell-background-win-x {
   background-image: url("assets/icon-x-outline.svg");
   background-color: var(--light-blue) !important;
@@ -243,13 +250,6 @@ html {
 
 .cell-background-o {
   background-image: url("assets/icon-o.svg");
-  background-repeat: no-repeat;
-  background-position: center center;
-  background-size: 40px;
-}
-
-.cell-background-o:hover {
-  background-image: url("assets/icon-o-outline.svg");
   background-repeat: no-repeat;
   background-position: center center;
   background-size: 40px;
@@ -518,19 +518,11 @@ body {
     background-size: 63.46px;
   }
 
-  .cell-background-x:hover {
-    background-size: 63.46px;
-  }
-
   .cell-background-win-x {
     background-size: 67.46px;
   }
 
   .cell-background-o {
-    background-size: 63.46px;
-  }
-
-  .cell-background-o:hover {
     background-size: 63.46px;
   }
 
@@ -609,5 +601,15 @@ body {
   #msg-body #restart,
   #msg-body #tied {
     margin-top: -23px;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .cell-background-x:hover {
+      background-size: 63.46px;
+    }
+
+    .cell-background-o:hover {
+      background-size: 63.46px;
+    }
   }
 }

@@ -519,7 +519,7 @@ var cellsGridPrototype = {
     this.markWinnerCells(this.won.cellsId);
     this.UpdateScore();
     this.removeCellsClick();
-    dialogBox.show();
+    dialog.show();
     this.showDialog();
     populateDialogStorage();
   },
@@ -552,22 +552,22 @@ var cellsGridPrototype = {
     var player = this.won.playerName;
 
     if (player === "none") {
-      configurePoppupDialog("tied");
+      dialog.configure("tied");
     }
 
     switch (player) {
       case "P1":
         if (mark === "x") {
           if (player2.name === "CPU") {
-            configurePoppupDialog("won-X");
+            dialog.configure("won-X");
           } else {
-            configurePoppupDialog("player1-X");
+            dialog.configure("player1-X");
           }
         } else if (mark === "o") {
           if (player2.name === "CPU") {
-            configurePoppupDialog("won-O");
+            dialog.configure("won-O");
           } else {
-            configurePoppupDialog("player1-O");
+            dialog.configure("player1-O");
           }
         }
 
@@ -575,18 +575,18 @@ var cellsGridPrototype = {
 
       case "P2":
         if (mark === "x") {
-          configurePoppupDialog("player2-X");
+          dialog.configure("player2-X");
         } else if (mark === "o") {
-          configurePoppupDialog("player2-O");
+          dialog.configure("player2-O");
         }
 
         break;
 
       case "CPU":
         if (mark === "x") {
-          configurePoppupDialog("lost-X");
+          dialog.configure("lost-X");
         } else if (mark === "o") {
-          configurePoppupDialog("lost-O");
+          dialog.configure("lost-O");
         }
 
         break;
@@ -822,124 +822,136 @@ function Computer() {
 }
 
 Computer.prototype = computerPrototype;
-Computer.prototype.constructor = Computer; // ============================================================================
+Computer.prototype.constructor = Computer; // DIALOG OBJECT
+
+dialogPrototype = {
+  close: function close() {
+    dialogBox.removeAttribute("open");
+  },
+  show: function show() {
+    dialogBox.setAttribute("open", "");
+  },
+  reset: function reset() {
+    var dialogElemList = document.querySelectorAll("#dialog-box p, #dialog-box h3, #dialog-box svg");
+
+    var _iterator9 = _createForOfIteratorHelper(dialogElemList.entries()),
+        _step9;
+
+    try {
+      for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
+        var _step9$value = _slicedToArray(_step9.value, 2),
+            _key = _step9$value[0],
+            entrie = _step9$value[1];
+
+        entrie.classList.add('not-show-element');
+      }
+    } catch (err) {
+      _iterator9.e(err);
+    } finally {
+      _iterator9.f();
+    }
+
+    ;
+    iconContainer.setAttribute("class", "");
+  },
+  configure: function configure(kind) {
+    switch (kind) {
+      case type.first:
+        playerWonLost.classList.remove('not-show-element');
+        playerWonLost.querySelector('.player-number').textContent = "1";
+        iconContainer.setAttribute("class", "msg-background-x");
+        takesRound.classList.remove('not-show-element');
+        takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
+        break;
+
+      case type.second:
+        playerWonLost.classList.remove('not-show-element');
+        playerWonLost.querySelector('.player-number').textContent = "1";
+        iconContainer.setAttribute('class', 'msg-background-o');
+        takesRound.classList.remove('not-show-element');
+        takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
+        break;
+        ye;
+
+      case type.third:
+        playerWonLost.classList.remove('not-show-element');
+        playerWonLost.querySelector('.player-number').textContent = "2";
+        iconContainer.setAttribute("class", "msg-background-x");
+        takesRound.classList.remove('not-show-element');
+        takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
+        break;
+
+      case type.fourth:
+        playerWonLost.classList.remove('not-show-element');
+        playerWonLost.querySelector('.player-number').textContent = "2";
+        iconContainer.setAttribute('class', 'msg-background-o');
+        takesRound.classList.remove('not-show-element');
+        takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
+        break;
+
+      case type.fifth:
+        won.classList.remove('not-show-element');
+        iconContainer.setAttribute("class", "msg-background-x");
+        takesRound.classList.remove('not-show-element');
+        takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
+        break;
+
+      case type.sixth:
+        won.classList.remove('not-show-element');
+        iconContainer.setAttribute('class', 'msg-background-o');
+        takesRound.classList.remove('not-show-element');
+        takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
+        break;
+
+      case type.seventh:
+        lost.classList.remove('not-show-element');
+        iconContainer.setAttribute("class", "msg-background-x");
+        takesRound.classList.remove('not-show-element');
+        takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
+        break;
+
+      case type.eighth:
+        lost.classList.remove('not-show-element');
+        iconContainer.setAttribute('class', 'msg-background-o');
+        takesRound.classList.remove('not-show-element');
+        takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
+        break;
+
+      case type.nineth:
+        iconContainer.setAttribute("class", 'not-show-element');
+        restart.classList.remove('not-show-element');
+        break;
+
+      case type.tenth:
+        iconContainer.setAttribute("class", 'not-show-element');
+        tied.classList.remove('not-show-element');
+        break;
+    }
+
+    if (kind === type.nineth) {
+      quitCancelBtn.classList.replace('quit-btn', 'quit-resize');
+      roundRestartBtn.classList.replace('nextround-restart-btn', 'next-round-resize');
+      quitCancelBtn.querySelector('span').textContent = 'no, cancel';
+      roundRestartBtn.querySelector('span').textContent = 'yes, restart';
+    } else {
+      quitCancelBtn.classList.replace('quit-resize', 'quit-btn');
+      roundRestartBtn.classList.replace('next-round-resize', 'nextround-restart-btn');
+      quitCancelBtn.querySelector('span').textContent = 'quit';
+      roundRestartBtn.querySelector('span').textContent = 'next round';
+    }
+
+    ;
+    dialogBox.setAttribute("data-type", kind);
+  }
+};
+
+function Dialog() {}
+
+;
+Dialog.prototype = dialogPrototype;
+Dialog.prototype.constructor = Dialog; // ============================================================================
 // --------------------------------FUNCTIONS-----------------------------------
 // ============================================================================
-// DIALOG
-
-function configurePoppupDialog(kind) {
-  switch (kind) {
-    case type.first:
-      playerWonLost.classList.remove('not-show-element');
-      playerWonLost.querySelector('.player-number').textContent = "1";
-      iconContainer.setAttribute("class", "msg-background-x");
-      takesRound.classList.remove('not-show-element');
-      takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
-      break;
-
-    case type.second:
-      playerWonLost.classList.remove('not-show-element');
-      playerWonLost.querySelector('.player-number').textContent = "1";
-      iconContainer.setAttribute('class', 'msg-background-o');
-      takesRound.classList.remove('not-show-element');
-      takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
-      break;
-      ye;
-
-    case type.third:
-      playerWonLost.classList.remove('not-show-element');
-      playerWonLost.querySelector('.player-number').textContent = "2";
-      iconContainer.setAttribute("class", "msg-background-x");
-      takesRound.classList.remove('not-show-element');
-      takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
-      break;
-
-    case type.fourth:
-      playerWonLost.classList.remove('not-show-element');
-      playerWonLost.querySelector('.player-number').textContent = "2";
-      iconContainer.setAttribute('class', 'msg-background-o');
-      takesRound.classList.remove('not-show-element');
-      takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
-      break;
-
-    case type.fifth:
-      won.classList.remove('not-show-element');
-      iconContainer.setAttribute("class", "msg-background-x");
-      takesRound.classList.remove('not-show-element');
-      takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
-      break;
-
-    case type.sixth:
-      won.classList.remove('not-show-element');
-      iconContainer.setAttribute('class', 'msg-background-o');
-      takesRound.classList.remove('not-show-element');
-      takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
-      break;
-
-    case type.seventh:
-      lost.classList.remove('not-show-element');
-      iconContainer.setAttribute("class", "msg-background-x");
-      takesRound.classList.remove('not-show-element');
-      takesRound.style.color = cssRootStyle.getPropertyValue("--light-blue");
-      break;
-
-    case type.eighth:
-      lost.classList.remove('not-show-element');
-      iconContainer.setAttribute('class', 'msg-background-o');
-      takesRound.classList.remove('not-show-element');
-      takesRound.style.color = cssRootStyle.getPropertyValue("--light-yellow");
-      break;
-
-    case type.nineth:
-      iconContainer.setAttribute("class", 'not-show-element');
-      restart.classList.remove('not-show-element');
-      break;
-
-    case type.tenth:
-      iconContainer.setAttribute("class", 'not-show-element');
-      tied.classList.remove('not-show-element');
-      break;
-  }
-
-  if (kind === type.nineth) {
-    quitCancelBtn.classList.replace('quit-btn', 'quit-resize');
-    roundRestartBtn.classList.replace('nextround-restart-btn', 'next-round-resize');
-    quitCancelBtn.querySelector('h5').textContent = 'no, cancel';
-    roundRestartBtn.querySelector('h5').textContent = 'yes, restart';
-  } else {
-    quitCancelBtn.classList.replace('quit-resize', 'quit-btn');
-    roundRestartBtn.classList.replace('next-round-resize', 'nextround-restart-btn');
-    quitCancelBtn.querySelector('h5').textContent = 'quit';
-    roundRestartBtn.querySelector('h5').textContent = 'next round';
-  }
-
-  ;
-  dialogBox.setAttribute("data-type", kind);
-}
-
-function resetDialog() {
-  var dialogElemList = document.querySelectorAll("#dialog-box p, #dialog-box h3, #dialog-box svg");
-
-  var _iterator9 = _createForOfIteratorHelper(dialogElemList.entries()),
-      _step9;
-
-  try {
-    for (_iterator9.s(); !(_step9 = _iterator9.n()).done;) {
-      var _step9$value = _slicedToArray(_step9.value, 2),
-          _key = _step9$value[0],
-          entrie = _step9$value[1];
-
-      entrie.classList.add('not-show-element');
-    }
-  } catch (err) {
-    _iterator9.e(err);
-  } finally {
-    _iterator9.f();
-  }
-
-  ;
-  iconContainer.setAttribute("class", "");
-}
 
 function restartNewRound() {
   cellsGrid.resetGrid();
@@ -1120,8 +1132,8 @@ function setStyle() {
     var dialogBoxObj = JSON.parse(sessionStorage.getItem("dialogBoxStyle"));
 
     if (dialogBoxObj.dialogBoxOpen) {
-      dialogBox.show();
-      configurePoppupDialog(dialogBoxObj.type);
+      dialog.show();
+      dialog.configure(dialogBoxObj.type);
     }
   } // JAVASCRIPT
 
@@ -1159,7 +1171,9 @@ var turn = new Turn(); //Arrays of cell
 
 var cells = cellsCreator(); // creating cellsGrid OBJECT to group and manage the cells all
 
-var cellsGrid = new CellsGrid(); // ============================================================================
+var cellsGrid = new CellsGrid(); // creating dialog Object
+
+var dialog = new Dialog(); // ============================================================================
 // --------------------------------------EVENTS--------------------------------
 // ============================================================================
 // Buttons
@@ -1212,21 +1226,24 @@ quitCancelBtn.addEventListener("click", function (e) {
     sessionStorage.clear();
     window.location.reload();
   } else {
-    resetDialog();
-    dialogBox.close();
+    dialog.reset();
+    dialog.close();
     populateDialogStorage();
   }
 });
 roundRestartBtn.addEventListener("click", function () {
   restartNewRound();
-  resetDialog();
-  dialogBox.close();
+  dialog.reset();
+  dialog.close();
   populateDialogStorage();
 });
 restartBtn.addEventListener("click", function () {
-  configurePoppupDialog("restart");
-  dialogBox.show();
+  dialog.configure("restart");
+  dialog.show();
   populateDialogStorage();
+});
+dialogBox.addEventListener("submit", function (e) {
+  e.preventDefault();
 }); //session storage events
 
 window.addEventListener("load", function () {
@@ -1262,7 +1279,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54879" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61081" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

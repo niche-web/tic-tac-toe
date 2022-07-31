@@ -16,7 +16,6 @@ This is a solution to the [Tic Tac Toe challenge on Frontend Mentor](https://www
 - [Author](#author)
 - [Acknowledgments](#acknowledgments)
 
-**Note: Delete this note and update the table of contents based on what sections you keep.**
 
 ## Overview
 
@@ -32,12 +31,13 @@ Users should be able to:
 
 ### Screenshot
 
-![](./preview.jpg)
+![](./screenshot.jpg)
+
 
 ### Links
 
-- Solution URL: [Add solution URL here](https://your-solution-url.com)
-- Live Site URL: [Add live site URL here](https://your-live-site-url.com)
+- Solution URL: [https://github.com/niche-web/tic-tac-toe.git]
+- Live Site URL: [https://master--lucky-axolotl-f2078a.netlify.app/]
 
 ## My process
 
@@ -48,15 +48,23 @@ Users should be able to:
 - Flexbox
 - CSS Grid
 - Mobile-first workflow
+- Vanilla JS
+
 
 ### What I learned
 
+The biggest challenge has been being able to develop a logic for the development of the single-computer game, as well as organizing my code so that it is as understandable as possible and not get lost between all the lines as the code grew. To achieve this, I leaned on the objects, creating as much as possible and planning the steps to follow on paper. Try to manipulate the DOM using classes and not inline styling. I applied local storage by first time. As you get into more difficult projects you realize how important MDN and stack overflow are for web developers or developers in general.
+
+
 ### Continued development
+
+For future projects I gonna focus on OOP making use of classes, also start using CSS transformation tools like postCSS and frameworks like React. Also introducing Webpack, I have been using Parcel.
 
 ### Useful resources
 
-- [Example resource 1](https://www.example.com) - This helped me for XYZ reason.
-- [Example resource 2](https://www.example.com) - This helped me for XYZ reason.
+- [MDN](https://developer.mozilla.org/en-US/) - The best if you wanna go deep in web development .
+- [stack overflow](https://stackoverflow.com/) - The best place to get help.
+
 
 ## Author
 
@@ -64,4 +72,7 @@ Users should be able to:
 - Frontend Mentor - [@niche-web](https://www.frontendmentor.io/profile/niche-web)
 - Twitter - [@Nani45670378](https://www.twitter.com/Nani45670378)
 
+
 ## Acknowledgments
+
+To MDN and stack overflow.

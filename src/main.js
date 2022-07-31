@@ -381,7 +381,7 @@ const cellsGridPrototype = {
 		this.markWinnerCells( this.won.cellsId );
 		this.UpdateScore();
 		this.removeCellsClick();
-		dialogBox.show();
+		dialog.show();
 		this.showDialog();
 		populateDialogStorage();
 	},
@@ -411,36 +411,36 @@ const cellsGridPrototype = {
 		let mark = this.won.mark;
 		let player = this.won.playerName;
 		if ( player === "none" ) {
-			configurePoppupDialog( "tied" );
+			dialog.configure( "tied" );
 		}
 		switch ( player ) {
 		case "P1":
 			if ( mark === "x" ) {
 				if ( player2.name === "CPU" ) {
-					configurePoppupDialog( "won-X" );
+					dialog.configure( "won-X" );
 				} else {
-					configurePoppupDialog( "player1-X" );
+					dialog.configure( "player1-X" );
 				}
 			} else if ( mark === "o" ) {
 				if ( player2.name === "CPU" ) {
-					configurePoppupDialog( "won-O" );
+					dialog.configure( "won-O" );
 				} else {
-					configurePoppupDialog( "player1-O" );
+					dialog.configure( "player1-O" );
 				}
 			}
 			break;
 		case "P2":
 			if ( mark === "x" ) {
-				configurePoppupDialog( "player2-X" );
+				dialog.configure( "player2-X" );
 			} else if ( mark === "o" ) {
-				configurePoppupDialog( "player2-O" );
+				dialog.configure( "player2-O" );
 			}
 			break;
 		case "CPU":
 			if ( mark === "x" ) {
-				configurePoppupDialog( "lost-X" );
+				dialog.configure( "lost-X" );
 			} else if ( mark === "o" ) {
-				configurePoppupDialog( "lost-O" );
+				dialog.configure( "lost-O" );
 			}
 			break;
 		}
@@ -625,111 +625,123 @@ function Computer() {
 Computer.prototype = computerPrototype;
 Computer.prototype.constructor = Computer;
 
+// DIALOG OBJECT
+dialogPrototype = {
+	close() {
+		dialogBox.removeAttribute( "open" )
+	},
+	show() {
+		dialogBox.setAttribute( "open", "" )
+	},
+	reset() {
+		let dialogElemList = document.querySelectorAll( "#dialog-box p, #dialog-box h3, #dialog-box svg" );
+		for ( let [ key, entrie ] of dialogElemList.entries() ) {
+			entrie.classList.add( 'not-show-element' );
+		};
+		iconContainer.setAttribute( "class", "" );
+	},
+	configure( kind ) {
+		switch ( kind ) {
+		case type.first:
+			playerWonLost.classList.remove( 'not-show-element' );
+			playerWonLost.querySelector( '.player-number' )
+				.textContent = "1";
+			iconContainer.setAttribute( "class", "msg-background-x" );
+			takesRound.classList.remove( 'not-show-element' );
+			takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
+			break;
+		case type.second:
+			playerWonLost.classList.remove( 'not-show-element' );
+			playerWonLost.querySelector( '.player-number' )
+				.textContent = "1";
+			iconContainer.setAttribute( 'class', 'msg-background-o' );
+			takesRound.classList.remove( 'not-show-element' );
+			takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
+			break;
+			ye
+		case type.third:
+			playerWonLost.classList.remove( 'not-show-element' );
+			playerWonLost.querySelector( '.player-number' )
+				.textContent = "2";
+			iconContainer.setAttribute( "class", "msg-background-x" );
+			takesRound.classList.remove( 'not-show-element' );
+			takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
+			break;
+		case type.fourth:
+			playerWonLost.classList.remove( 'not-show-element' );
+			playerWonLost.querySelector( '.player-number' )
+				.textContent = "2";
+			iconContainer.setAttribute( 'class', 'msg-background-o' );
+			takesRound.classList.remove( 'not-show-element' );
+			takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
+			break;
+		case type.fifth:
+			won.classList.remove( 'not-show-element' );
+			iconContainer.setAttribute( "class", "msg-background-x" );
+			takesRound.classList.remove( 'not-show-element' );
+			takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
+			break;
+		case type.sixth:
+			won.classList.remove( 'not-show-element' );
+			iconContainer.setAttribute( 'class', 'msg-background-o' );
+			takesRound.classList.remove( 'not-show-element' );
+			takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
+			break;
+		case type.seventh:
+			lost.classList.remove( 'not-show-element' );
+			iconContainer.setAttribute( "class", "msg-background-x" );
+			takesRound.classList.remove( 'not-show-element' );
+			takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
+			break;
+		case type.eighth:
+			lost.classList.remove( 'not-show-element' );
+			iconContainer.setAttribute( 'class', 'msg-background-o' );
+			takesRound.classList.remove( 'not-show-element' );
+			takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
+			break;
+		case type.nineth:
+			iconContainer.setAttribute( "class", 'not-show-element' );
+			restart.classList.remove( 'not-show-element' );
+			break;
+		case type.tenth:
+			iconContainer.setAttribute( "class", 'not-show-element' );
+			tied.classList.remove( 'not-show-element' );
+			break;
+		}
+		if ( kind === type.nineth ) {
+			quitCancelBtn.classList.replace( 'quit-btn', 'quit-resize' );
+			roundRestartBtn.classList.replace(
+				'nextround-restart-btn',
+				'next-round-resize'
+			);
+			quitCancelBtn.querySelector( 'span' )
+				.textContent = 'no, cancel';
+			roundRestartBtn.querySelector( 'span' )
+				.textContent =
+				'yes, restart';
+		} else {
+			quitCancelBtn.classList.replace( 'quit-resize', 'quit-btn' );
+			roundRestartBtn.classList.replace(
+				'next-round-resize',
+				'nextround-restart-btn'
+			);
+			quitCancelBtn.querySelector( 'span' )
+				.textContent = 'quit';
+			roundRestartBtn.querySelector( 'span' )
+				.textContent = 'next round';
+		};
+		dialogBox.setAttribute( "data-type", kind );
+	}
+}
+
+function Dialog() {};
+
+Dialog.prototype = dialogPrototype;
+Dialog.prototype.constructor = Dialog;
 
 // ============================================================================
 // --------------------------------FUNCTIONS-----------------------------------
 // ============================================================================
-// DIALOG
-function configurePoppupDialog( kind ) {
-	switch ( kind ) {
-	case type.first:
-		playerWonLost.classList.remove( 'not-show-element' );
-		playerWonLost.querySelector( '.player-number' )
-			.textContent = "1";
-		iconContainer.setAttribute( "class", "msg-background-x" );
-		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
-		break;
-	case type.second:
-		playerWonLost.classList.remove( 'not-show-element' );
-		playerWonLost.querySelector( '.player-number' )
-			.textContent = "1";
-		iconContainer.setAttribute( 'class', 'msg-background-o' );
-		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
-		break;
-		ye
-	case type.third:
-		playerWonLost.classList.remove( 'not-show-element' );
-		playerWonLost.querySelector( '.player-number' )
-			.textContent = "2";
-		iconContainer.setAttribute( "class", "msg-background-x" );
-		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
-		break;
-	case type.fourth:
-		playerWonLost.classList.remove( 'not-show-element' );
-		playerWonLost.querySelector( '.player-number' )
-			.textContent = "2";
-		iconContainer.setAttribute( 'class', 'msg-background-o' );
-		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
-		break;
-	case type.fifth:
-		won.classList.remove( 'not-show-element' );
-		iconContainer.setAttribute( "class", "msg-background-x" );
-		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
-		break;
-	case type.sixth:
-		won.classList.remove( 'not-show-element' );
-		iconContainer.setAttribute( 'class', 'msg-background-o' );
-		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
-		break;
-	case type.seventh:
-		lost.classList.remove( 'not-show-element' );
-		iconContainer.setAttribute( "class", "msg-background-x" );
-		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-blue" );
-		break;
-	case type.eighth:
-		lost.classList.remove( 'not-show-element' );
-		iconContainer.setAttribute( 'class', 'msg-background-o' );
-		takesRound.classList.remove( 'not-show-element' );
-		takesRound.style.color = cssRootStyle.getPropertyValue( "--light-yellow" );
-		break;
-	case type.nineth:
-		iconContainer.setAttribute( "class", 'not-show-element' );
-		restart.classList.remove( 'not-show-element' );
-		break;
-	case type.tenth:
-		iconContainer.setAttribute( "class", 'not-show-element' );
-		tied.classList.remove( 'not-show-element' );
-		break;
-	}
-	if ( kind === type.nineth ) {
-		quitCancelBtn.classList.replace( 'quit-btn', 'quit-resize' );
-		roundRestartBtn.classList.replace(
-			'nextround-restart-btn',
-			'next-round-resize'
-		);
-		quitCancelBtn.querySelector( 'h5' )
-			.textContent = 'no, cancel';
-		roundRestartBtn.querySelector( 'h5' )
-			.textContent =
-			'yes, restart';
-	} else {
-		quitCancelBtn.classList.replace( 'quit-resize', 'quit-btn' );
-		roundRestartBtn.classList.replace(
-			'next-round-resize',
-			'nextround-restart-btn'
-		);
-		quitCancelBtn.querySelector( 'h5' )
-			.textContent = 'quit';
-		roundRestartBtn.querySelector( 'h5' )
-			.textContent = 'next round';
-	};
-	dialogBox.setAttribute( "data-type", kind );
-}
-
-function resetDialog() {
-	let dialogElemList = document.querySelectorAll( "#dialog-box p, #dialog-box h3, #dialog-box svg" );
-	for ( let [ key, entrie ] of dialogElemList.entries() ) {
-		entrie.classList.add( 'not-show-element' );
-	};
-	iconContainer.setAttribute( "class", "" );
-}
 
 function restartNewRound() {
 	cellsGrid.resetGrid();
@@ -880,8 +892,8 @@ function setStyle() {
 	if ( sessionStorage.getItem( "dialogBoxStyle" ) ) {
 		var dialogBoxObj = JSON.parse( sessionStorage.getItem( "dialogBoxStyle" ) );
 		if ( dialogBoxObj.dialogBoxOpen ) {
-			dialogBox.show();
-			configurePoppupDialog( dialogBoxObj.type );
+			dialog.show();
+			dialog.configure( dialogBoxObj.type );
 		}
 	}
 	// JAVASCRIPT
@@ -920,6 +932,8 @@ const turn = new Turn();
 const cells = cellsCreator();
 // creating cellsGrid OBJECT to group and manage the cells all
 const cellsGrid = new CellsGrid();
+// creating dialog Object
+const dialog = new Dialog();
 // ============================================================================
 // --------------------------------------EVENTS--------------------------------
 // ============================================================================
@@ -969,21 +983,25 @@ quitCancelBtn.addEventListener( "click", ( e ) => {
 		sessionStorage.clear();
 		window.location.reload();
 	} else {
-		resetDialog();
-		dialogBox.close();
+		dialog.reset();
+		dialog.close();
 		populateDialogStorage();
 	}
 } );
 roundRestartBtn.addEventListener( "click", () => {
 	restartNewRound();
-	resetDialog();
-	dialogBox.close();
+	dialog.reset();
+	dialog.close();
 	populateDialogStorage();
 } );
 restartBtn.addEventListener( "click", () => {
-	configurePoppupDialog( "restart" )
-	dialogBox.show();
+	dialog.configure( "restart" )
+	dialog.show();
 	populateDialogStorage();
+} );
+
+dialogBox.addEventListener( "submit", ( e ) => {
+	e.preventDefault();
 } );
 
 //session storage events
